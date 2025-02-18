@@ -1,0 +1,48 @@
+{
+  "firestore": {
+    "indexes": [
+      {
+        "collectionGroup": "houses",
+        "queryScope": "COLLECTION",
+        "fields": [
+          { "fieldPath": "Catégorie", "order": "ASCENDING" },
+          { "fieldPath": "Type de transaction", "order": "ASCENDING" }
+        ]
+      },
+      {
+        "collectionGroup": "houses",
+        "queryScope": "COLLECTION",
+        "fields": [
+          { "fieldPath": "Nombre de chambres", "order": "ASCENDING" },
+          { "fieldPath": "Nombre de salons", "order": "ASCENDING" },
+          { "fieldPath": "Nombre de salles de bain", "order": "ASCENDING" }
+        ]
+      },
+      {
+        "collectionGroup": "houses",
+        "queryScope": "COLLECTION",
+        "fields": [
+          { "fieldPath": "Prix", "order": "ASCENDING" },
+          { "fieldPath": "Superficie", "order": "ASCENDING" }
+        ]
+      },
+      {
+        "collectionGroup": "houses",
+        "queryScope": "COLLECTION",
+        "fields": [
+          { "fieldPath": "Quartier", "order": "ASCENDING" },
+          { "fieldPath": "Devise", "order": "ASCENDING" }
+        ]
+      },
+      {
+        "collectionGroup": "houses",
+        "queryScope": "COLLECTION",
+        "fields": [
+          { "fieldPath": "Durée locative", "order": "ASCENDING" },
+          { "fieldPath": "Nombre d'étages", "order": "ASCENDING" }
+        ]
+      }
+    ],
+    "fieldOverrides": []
+  }
+}
