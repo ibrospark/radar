@@ -469,7 +469,7 @@ class _UserSignUpScreenState extends State<UserSignUpScreen> {
                                         icon: SvgPicture.asset(
                                           'assets/svg/camera.svg',
                                           height: 20,
-                                          color: Colors.white,
+                                          color: Colors.black,
                                         ),
                                         onPressed: () {
                                           Navigator.pop(context);
@@ -482,7 +482,7 @@ class _UserSignUpScreenState extends State<UserSignUpScreen> {
                                         icon: SvgPicture.asset(
                                           'assets/svg/image_picker.svg',
                                           height: 20,
-                                          color: Colors.white,
+                                          color: Colors.black,
                                         ),
                                         onPressed: () {
                                           Navigator.pop(context);

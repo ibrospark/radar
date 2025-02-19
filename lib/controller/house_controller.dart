@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -29,13 +30,14 @@ class HouseController extends GetxController {
   final priceController = TextEditingController().obs;
   final minPriceController = TextEditingController().obs;
   final maxPriceController = TextEditingController().obs;
-
   final areaController = TextEditingController().obs;
   final numberOfBedroomsController = TextEditingController().obs;
   final numberOfRoomsController = TextEditingController().obs;
   final numberOfLivingRoomsController = TextEditingController().obs;
   final numberOfBathroomsController = TextEditingController().obs;
   final numberOfFloorsController = TextEditingController().obs;
+
+  StreamSubscription<QuerySnapshot>? housesSubscription;
 
   @override
   void onInit() {
@@ -51,13 +53,15 @@ class HouseController extends GetxController {
 
   @override
   void onClose() {
+    stopHousesStream();
     _disposeControllers();
     super.onClose();
   }
 
   // Bind Firestore stream to the houses list
   void bindHousesStream() {
-    FirebaseFirestore.instance.collection('houses').snapshots().listen(
+    housesSubscription =
+        FirebaseFirestore.instance.collection('houses').snapshots().listen(
       (querySnapshot) {
         houses.value = querySnapshot.docs
             .map((doc) => House.fromMap(doc.data(), doc.id))
@@ -69,20 +73,10 @@ class HouseController extends GetxController {
     );
   }
 
-  // Stop Firestore stream
+  // Arrêter le stream correctement
   void stopHousesStream() {
-    // Cancel the subscription to the Firestore stream
-    FirebaseFirestore.instance
-        .collection('houses')
-        .snapshots()
-        .listen(null)
-        .cancel();
-  }
-
-  // Restart Firestore stream
-  void restartHousesStream() {
-    stopHousesStream();
-    bindHousesStream();
+    housesSubscription?.cancel();
+    housesSubscription = null;
   }
 
   // Initialize controllers

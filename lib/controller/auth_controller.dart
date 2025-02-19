@@ -27,8 +27,6 @@ class AuthController extends GetxController {
   }
 
   void verifyPhoneNumber(String phoneNumber) async {
-    isLoading.value = true;
-
     try {
       await _auth.verifyPhoneNumber(
         phoneNumber: phoneNumber,
@@ -49,8 +47,6 @@ class AuthController extends GetxController {
       );
     } catch (e) {
       _showErrorSnackbar("Une erreur est survenue lors de la vérification: $e");
-    } finally {
-      isLoading.value = false;
     }
   }
 
@@ -62,6 +58,8 @@ class AuthController extends GetxController {
 
       if (userCredential.additionalUserInfo?.isNewUser ?? false) {
         await _registerNewUser(userCredential);
+        _showSuccessSnackbar("Bienvenue sur Radar !");
+        Get.offAllNamed(Routes.userCompleteRegistration);
       } else {
         _showSuccessSnackbar("Ravi de vous revoir !");
         if (rxUserController.currentUser.value!.profileComplete == false) {
@@ -100,9 +98,6 @@ class AuthController extends GetxController {
       numberOfPublication: 5,
       numberOfDay: 90,
     );
-
-    _showSuccessSnackbar("Bienvenue sur Radar !");
-    Get.offAllNamed(Routes.userCompleteRegistration);
   }
 
   Future<void> signInWithOTP(String verificationId, String smsCode) async {

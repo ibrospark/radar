@@ -114,7 +114,7 @@ class _AddHouseScreenState extends State<AddHouseScreen> {
                                   color: white,
                                 ),
                                 onPressed: () {
-                                  rxMapController.activatePickHomeMode();
+                                  rxMapController.activatePickerMode();
                                   Get.toNamed(Routes.mainMap);
                                 },
                               ),

@@ -166,6 +166,7 @@ List<String> transactionsTypeList = [
 ];
 
 List<String> accountTypeList = <String>[
+  'Particulier',
   'Propriétaire',
   'Bailleur',
   'Courtier',

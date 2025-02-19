@@ -25,25 +25,12 @@ class MapController extends GetxController {
 
   // Current USER VARS ----------------------------------------------------------------
   RxString neighborhood = ''.obs; // Quartier
-
-  // ORIGIN ---------------------------------------
-  Rx<LatLng> originLatLng = const LatLng(0.0, 0.0).obs;
-  RxDouble originLat = 0.0.obs;
-  RxDouble originLong = 0.0.obs;
-
-  // DESTINATION ---------------------------------------
-  Rx<LatLng> destinationLatLng = const LatLng(0.0, 0.0).obs;
-  RxDouble destinationLat = 0.0.obs;
-  RxDouble destinationLong = 0.0.obs;
-
   // CURRENT USER ----------------------------------------------------------------
   Rx<LatLng> currentUserLatLng = const LatLng(0.0, 0.0).obs;
-  RxDouble currentUserLatitude = 0.0.obs;
-  RxDouble currentUserLongitude = 0.0.obs;
+  // CURRENT CAMERA IDLE ----------------------------------------------------------------
+  Rx<LatLng> currentCameraIdleLatLng = const LatLng(0.0, 0.0).obs;
   // CURRENT HOUSE ----------------------------------------------------------------
   Rx<LatLng> currentHouseLatLng = const LatLng(0.0, 0.0).obs;
-  RxDouble currentHouseLatitude = 0.0.obs;
-  RxDouble currentHouseLongitude = 0.0.obs;
 
   // Map controller
   Rx<GoogleMapController?> googleMapController = Rx<GoogleMapController?>(null);
@@ -54,11 +41,12 @@ class MapController extends GetxController {
   RxSet<Polyline> polylines = <Polyline>{}.obs;
   List<LatLng> polylineCoordinates = [];
   PolylinePoints polylinePointsBetween = PolylinePoints();
-  List<LatLng> polylinePoints = [];
 
   // UI State management
   RxBool isMapCreated = false.obs;
-  RxBool displayRoute = false.obs;
+  RxBool isMapReady = false.obs;
+  RxBool isPickerMode = false.obs;
+  RxBool isRouteMode = false.obs;
   RxBool displayCurrentPositionBtnCircular = true.obs;
   RxBool displayCurrentPositionBtnLg = false.obs;
   RxBool displaySearchLocationBar = true.obs;
@@ -71,11 +59,10 @@ class MapController extends GetxController {
   // Location and Camera Management ----------------------------------------------------
   Future<void> setCurrentLocation() async {
     Position position = await determineCurrentPosition();
-    moveCamera(position.latitude, position.longitude);
 
+    moveCamera(position.latitude, position.longitude);
+    // Define current user locationxz
     currentUserLatLng.value = LatLng(position.latitude, position.longitude);
-    currentUserLatitude.value = position.latitude;
-    currentUserLongitude.value = position.longitude;
 
     clearSpecificMarker('current_position');
     clearSpecificMarker('place_selection');
@@ -84,6 +71,7 @@ class MapController extends GetxController {
         currentUserLatLng.value, 'current_position', 'currentPosition');
   }
 
+// Determiner la position actuelle de l'utilisateur
   Future<Position> determineCurrentPosition() async {
     if (!await Geolocator.isLocationServiceEnabled()) {
       return Future.error("Location services disabled.");
@@ -116,7 +104,7 @@ class MapController extends GetxController {
 
   void onCameraIdle() {
     final latLng = cameraPosition.value.target;
-    currentUserLatLng.value = latLng;
+    currentCameraIdleLatLng.value = latLng;
   }
 
   // Marker Management -----------------------------------------------------------------
@@ -355,8 +343,8 @@ class MapController extends GetxController {
     setCurrentLocation();
     // Mise à jour du texte du champ de recherche
     await rxSearchPlaceController.getPlaceNameFromLatLng(
-      currentUserLatLng.value.latitude,
-      currentUserLatLng.value.longitude,
+      currentCameraIdleLatLng.value.latitude,
+      currentCameraIdleLatLng.value.longitude,
     );
   }
 
@@ -450,7 +438,11 @@ class MapController extends GetxController {
   }
 
   activateDefaultMode() {
-    displayRoute.value = false;
+    clearPolylines();
+    clearMarkersExcept(
+        ['current_position', rxHouseController.currentHouse.value.id!]);
+    isPickerMode.value = false;
+    isRouteMode.value = false;
     displayCurrentPositionBtnCircular.value = true;
     displayCurrentPositionBtnLg.value = false;
     displaySearchLocationBar.value = true;
@@ -462,43 +454,54 @@ class MapController extends GetxController {
     rxHouseController.bindHousesStream();
   }
 
-  void activatePickHomeMode() {
-    displayFilterPanel.value = false;
+  void activatePickerMode() {
+    // Update UI state
+    isPickerMode.value = true;
+    isRouteMode.value = false;
     displayCurrentPositionBtnCircular.value = false;
+    displayCurrentPositionBtnLg.value = true;
+    displaySearchLocationBar.value = true;
+    displayIconPickerHouse.value = true;
+    displayValidatePositionBtnLg.value = true;
+    displayFilterPanel.value = false;
     displayDrawerBtn.value = false;
     displayPublishBtn.value = false;
-    displayIconPickerHouse.value = true;
 
-    displayCurrentPositionBtnLg.value = true;
     rxHouseController.stopHousesStream();
-    markers.clear();
+    rxMapController.clearMarkers();
     rxMapController.clearPolylines();
   }
 
   // --------------------------------------------------------------
   void activateRouteMode() {
+    clearPolylines();
+    clearMarkersExcept(
+        ['current_position', rxHouseController.currentHouse.value.id!]);
+    setCurrentLocation();
+
     // Update UI state
-    displayFilterPanel.value = false;
+    isPickerMode.value = false;
+    isRouteMode.value = true;
     displayCurrentPositionBtnCircular.value = false;
+    displayCurrentPositionBtnLg.value = false;
+    displaySearchLocationBar.value = false;
+    displayIconPickerHouse.value = false;
+    displayValidatePositionBtnLg.value = false;
+    displayFilterPanel.value = false;
     displayDrawerBtn.value = false;
     displayPublishBtn.value = false;
-    displayIconPickerHouse.value = false;
-    displayCurrentPositionBtnLg.value = false;
-    displayRoute.value = true;
-    clearPolylines();
-    setCurrentLocation();
+
     drawRoute(
-        rxMapController.currentUserLatitude.value,
-        rxMapController.currentHouseLongitude.value,
+        rxMapController.currentUserLatLng.value.latitude,
+        rxMapController.currentUserLatLng.value.longitude,
         rxHouseController.currentHouse.value.coords!.latitude,
         rxHouseController.currentHouse.value.coords!.longitude);
     calculateDistanceBetweenPoints(
-        rxMapController.currentUserLatitude.value,
-        rxMapController.currentHouseLongitude.value,
+        rxMapController.currentUserLatLng.value.latitude,
+        rxMapController.currentUserLatLng.value.longitude,
         rxHouseController.currentHouse.value.coords!.latitude,
         rxHouseController.currentHouse.value.coords!.longitude);
-    clearMarkersExcept(
-        ['current_position', rxHouseController.currentHouse.value.id!]);
+
     Get.back();
   }
 

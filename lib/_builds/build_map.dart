@@ -24,7 +24,9 @@ Widget buildGoogleMap(GlobalKey<ScaffoldState> scaffoldKey,
           }
 
           if (rxMapController.isMapCreated.value) {
-            rxMapController.setFilteredFirebaseCircularMarker();
+            if (rxMapController.isPickerMode.value != true) {
+              rxMapController.setFilteredFirebaseCircularMarker();
+            }
           }
 
           return Obx(
@@ -360,7 +362,7 @@ buildSearchBarLocation() {
 
 buildDisplayRoute() {
   return Obx(
-    () => rxMapController.displayRoute.value
+    () => rxMapController.isRouteMode.value
         ? Positioned(
             bottom: Get.size.height * 0.05,
             right: 20,
