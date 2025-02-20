@@ -10,6 +10,7 @@ import 'package:radar/controller/draggable_scrollable_sheet_controller.dart';
 import 'package:radar/controller/house_controller.dart';
 import 'package:radar/controller/image_controller.dart';
 import 'package:radar/controller/maps_controller.dart';
+import 'package:radar/controller/notification_controller.dart';
 import 'package:radar/controller/place_controller.dart';
 import 'package:radar/controller/offer_controller.dart';
 import 'package:radar/controller/offer_subscription_controller.dart';
@@ -73,6 +74,7 @@ DraggableScrollableSheetController rxDraggableScrollableSheetController =
 ConversationController rxConversationController = Get.find();
 OfferController rxOfferController = Get.find();
 OfferSubscriptionController rxOfferSubscriptionController = Get.find();
+NotificationController rxNotificationController = Get.find();
 
 // -----------------------------------------------
 String googleMapApiKey = 'AIzaSyAONca6NEPKGnm_GSXAr3wDfKsnfbevES4';

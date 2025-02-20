@@ -1,6 +1,8 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:radar/controller/notification_controller.dart';
 // Utilisation de AuthController
 import 'package:radar/firebase_options.dart';
 import 'package:radar/screens/auth/login_screen.dart';
@@ -15,6 +17,9 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   initializeControllers(); // Initialisation des contrôleurs globalement
+  FirebaseMessaging.onBackgroundMessage(
+      NotificationController.backgroundHandler);
+
   runApp(const MyApp());
 }
 

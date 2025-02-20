@@ -5,6 +5,7 @@ import 'package:radar/screens/auth/verification_otp_screen.dart';
 import 'package:radar/screens/houses/add_house_screen.dart';
 import 'package:radar/screens/maps/main_maps_screen.dart';
 import 'package:radar/screens/maps/search_place_screen.dart';
+import 'package:radar/screens/notifications/notifications_screen.dart';
 import 'package:radar/screens/offer/offer_add_screen.dart';
 import 'package:radar/screens/offer/offer_index_screen.dart';
 import 'package:radar/screens/offer/offer_list_screen.dart';
@@ -36,6 +37,8 @@ class Routes {
   static const String offers = '/offers';
   static const String addOffer = '/add-Offer';
   static const String offerSubscription = '/offer-subscription';
+  // Notifications
+  static const String notifications = '/notifications';
 }
 
 List<GetPage<dynamic>> routesList = [
@@ -95,5 +98,10 @@ List<GetPage<dynamic>> routesList = [
   GetPage(
     name: Routes.offerSubscription,
     page: () => const OfferSubscriptionListScreen(),
+  ),
+  // Notifications----------------------------
+  GetPage(
+    name: Routes.notifications,
+    page: () => NotificationScreen(),
   ),
 ];

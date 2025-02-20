@@ -42,7 +42,7 @@ class HouseController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    bindHousesStream();
+    startHousesStream();
   }
 
   @override
@@ -59,7 +59,7 @@ class HouseController extends GetxController {
   }
 
   // Bind Firestore stream to the houses list
-  void bindHousesStream() {
+  void startHousesStream() {
     housesSubscription =
         FirebaseFirestore.instance.collection('houses').snapshots().listen(
       (querySnapshot) {

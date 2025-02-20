@@ -259,8 +259,8 @@ class MapController extends GetxController {
   void _showResultsSnackbar(List<House> houses) {
     if (houses.isNotEmpty) {
       Get.snackbar(
-        "Résultats trouvés !",
-        "Nous avons trouvé ${houses.length} résultat(s) pour votre recherche !",
+        "Bien(s) trouvé(s) !",
+        "Nous avons trouvé ${houses.length} résultat(s) !",
         backgroundColor: Colors.green,
       );
     } else {
@@ -438,9 +438,6 @@ class MapController extends GetxController {
   }
 
   activateDefaultMode() {
-    clearPolylines();
-    clearMarkersExcept(
-        ['current_position', rxHouseController.currentHouse.value.id!]);
     isPickerMode.value = false;
     isRouteMode.value = false;
     displayCurrentPositionBtnCircular.value = true;
@@ -451,10 +448,14 @@ class MapController extends GetxController {
     displayFilterPanel.value = true;
     displayDrawerBtn.value = true;
     displayPublishBtn.value = true;
-    rxHouseController.bindHousesStream();
+    rxHouseController.startHousesStream();
+    clearPolylines();
   }
 
   void activatePickerMode() {
+    rxMapController.clearMarkers();
+    rxMapController.clearPolylines();
+    rxHouseController.stopHousesStream();
     // Update UI state
     isPickerMode.value = true;
     isRouteMode.value = false;
@@ -466,18 +467,15 @@ class MapController extends GetxController {
     displayFilterPanel.value = false;
     displayDrawerBtn.value = false;
     displayPublishBtn.value = false;
-
-    rxHouseController.stopHousesStream();
-    rxMapController.clearMarkers();
-    rxMapController.clearPolylines();
   }
 
   // --------------------------------------------------------------
   void activateRouteMode() {
+    setCurrentLocation();
+
     clearPolylines();
     clearMarkersExcept(
         ['current_position', rxHouseController.currentHouse.value.id!]);
-    setCurrentLocation();
 
     // Update UI state
     isPickerMode.value = false;

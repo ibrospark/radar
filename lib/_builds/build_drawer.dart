@@ -196,6 +196,7 @@ Drawer buildDrawer() {
               color: white,
               fontWeight: FontWeight.w600,
             ),
+            onTap: () => Get.toNamed(Routes.notifications),
           ),
           divider,
           ListTile(

@@ -12,6 +12,7 @@ import 'package:radar/controller/draggable_scrollable_sheet_controller.dart';
 import 'package:radar/controller/house_controller.dart';
 import 'package:radar/controller/image_controller.dart';
 import 'package:radar/controller/maps_controller.dart';
+import 'package:radar/controller/notification_controller.dart';
 import 'package:radar/controller/place_controller.dart';
 import 'package:radar/controller/offer_controller.dart';
 import 'package:radar/controller/offer_subscription_controller.dart';
@@ -36,6 +37,7 @@ void initializeControllers() {
   Get.put(MapController());
   Get.put(SearchPlaceController());
   Get.put(DraggableScrollableSheetController());
+  Get.put(NotificationController());
 }
 
 String screenDeviceType(BuildContext context) {

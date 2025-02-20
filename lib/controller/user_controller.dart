@@ -66,20 +66,6 @@ class UserController extends GetxController {
     });
   }
 
-  // Method to save FCM token to Firestore
-  Future<void> saveFcmToken(String userId, String fcmToken) async {
-    try {
-      await _firestore.collection('users').doc(userId).update({
-        'fcmToken': fcmToken,
-      });
-      if (kDebugMode) {
-        print('FCM token enregistré avec succès');
-      }
-    } catch (e) {
-      _handleError('Erreur lors de l\'enregistrement du FCM token', e);
-    }
-  }
-
   // Method to bind the stream for all users
   void _bindUsersStream() {
     _firestore.collection('users').snapshots().listen((querySnapshot) {
