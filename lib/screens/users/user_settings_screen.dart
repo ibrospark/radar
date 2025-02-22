@@ -59,7 +59,7 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
                             ? buildImageCircle(
                                 rxImageController.pickedImages.last
                                     .path, // Utilisation de la première image si elle existe
-                                imageType: "File",
+                                imageType: ImageType.File,
                                 radius: 80,
                               )
                             : buildImageCircle(

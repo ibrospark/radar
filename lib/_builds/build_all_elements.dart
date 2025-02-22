@@ -260,11 +260,13 @@ Widget buildLogo({
   );
 }
 
+enum ImageType { Asset, File, Network }
+
 Widget buildImageCircle(
   String imageUrl, {
   double radius = 50.0,
   Color borderColor = Colors.white,
-  String imageType = "Network",
+  ImageType imageType = ImageType.Network,
 }) {
   return Container(
     width: radius * 2 + 4, // Diamètre + largeur de la bordure
@@ -277,56 +279,81 @@ Widget buildImageCircle(
       ),
     ),
     child: ClipOval(
-      child: Builder(
-        builder: (context) {
-          switch (imageType) {
-            case "Asset":
-              return Image.asset(
-                imageUrl,
-                width: radius * 2, // Diamètre
-                height: radius * 2,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return _buildPlaceholder(radius);
-                },
-              );
-            case "File":
-              return Image.file(
-                File(imageUrl),
-                width: radius * 2,
-                height: radius * 2,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return _buildPlaceholder(radius);
-                },
-              );
-            case "Network":
-            default:
-              return Image.network(
-                imageUrl,
-                width: radius * 2,
-                height: radius * 2,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return _buildPlaceholder(radius);
-                },
-              );
-          }
-        },
-      ),
+      child: _buildImage(imageUrl, imageType, radius),
     ),
   );
 }
 
+// Fonction générique pour charger les images
+Widget _buildImage(String imageUrl, ImageType imageType, double radius) {
+  switch (imageType) {
+    case ImageType.Asset:
+      return _buildImageFromAsset(imageUrl, radius);
+    case ImageType.File:
+      return _buildImageFromFile(imageUrl, radius);
+    case ImageType.Network:
+    default:
+      return _buildImageFromNetwork(imageUrl, radius);
+  }
+}
+
+// Fonction pour charger l'image depuis les assets
+Widget _buildImageFromAsset(String imageUrl, double radius) {
+  return Image.asset(
+    imageUrl,
+    width: radius * 2,
+    height: radius * 2,
+    fit: BoxFit.cover,
+    errorBuilder: (context, error, stackTrace) {
+      return _buildPlaceholder(radius);
+    },
+  );
+}
+
+// Fonction pour charger l'image depuis un fichier local
+Widget _buildImageFromFile(String imageUrl, double radius) {
+  final file = File(imageUrl);
+  if (file.existsSync()) {
+    return Image.file(
+      file,
+      width: radius * 2,
+      height: radius * 2,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) {
+        return _buildPlaceholder(radius);
+      },
+    );
+  } else {
+    return _buildPlaceholder(radius);
+  }
+}
+
+// Fonction pour charger l'image depuis une URL
+Widget _buildImageFromNetwork(String imageUrl, double radius) {
+  return Image.network(
+    imageUrl,
+    width: radius * 2,
+    height: radius * 2,
+    fit: BoxFit.cover,
+    errorBuilder: (context, error, stackTrace) {
+      return _buildPlaceholder(radius);
+    },
+  );
+}
+
+// Placeholder en cas d'erreur
 Widget _buildPlaceholder(double radius) {
   return Container(
     width: radius * 2,
     height: radius * 2,
-    color: Colors.grey[200], // Couleur de fond du placeholder
+    decoration: BoxDecoration(
+      shape: BoxShape.circle,
+      color: Colors.grey[300], // Couleur de fond pour le placeholder
+    ),
     child: Icon(
-      Icons.person, // Icône par défaut pour le placeholder
+      Icons.account_circle,
       size: radius,
-      color: Colors.grey[400],
+      color: Colors.white,
     ),
   );
 }

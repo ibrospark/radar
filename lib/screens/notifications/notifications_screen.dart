@@ -25,7 +25,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
         decoration: BoxDecoration(gradient: gradient),
         child: Column(
           children: [
-            Obx(() => _buildLatestNotification()),
             Expanded(child: Obx(() => _buildNotificationList())),
           ],
         ),
@@ -33,50 +32,39 @@ class _NotificationScreenState extends State<NotificationScreen> {
     );
   }
 
-  Widget _buildLatestNotification() {
-    final latest = rxNotificationController.latestNotification.value;
-    return Visibility(
-      visible: latest != null,
-      child: _buildNotificationCard(latest!),
-    );
-  }
-
   Widget _buildNotificationList() {
     return ListView.builder(
       itemCount: rxNotificationController.notifications.length,
       itemBuilder: (context, index) {
-        return _buildNotificationCard(
-            rxNotificationController.notifications[index]);
-      },
-    );
-  }
-
-  Widget _buildNotificationCard(NotificationModel notification) {
-    return Card(
-      margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      child: buildListTile(
-        title: Text(notification.title,
-            style: TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text(notification.body),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              "${notification.timestamp.hour}:${notification.timestamp.minute}",
-              style: TextStyle(color: Colors.grey),
+        NotificationModel notification =
+            rxNotificationController.notifications[index];
+        return Container(
+          margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          child: buildListTile(
+            title: Text(notification.title,
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: Text(notification.body),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "${notification.timestamp.hour}:${notification.timestamp.minute}",
+                  style: TextStyle(color: Colors.grey),
+                ),
+                _buildIconButton(Icons.mark_email_read, Colors.blue, () {
+                  rxNotificationController.markAsRead(notification);
+                }),
+                _buildIconButton(Icons.mark_email_unread, Colors.orange, () {
+                  rxNotificationController.markAsUnread(notification);
+                }),
+                _buildIconButton(Icons.delete, Colors.red, () {
+                  rxNotificationController.deleteNotification(notification);
+                }),
+              ],
             ),
-            _buildIconButton(Icons.mark_email_read, Colors.blue, () {
-              rxNotificationController.markAsRead(notification);
-            }),
-            _buildIconButton(Icons.mark_email_unread, Colors.orange, () {
-              rxNotificationController.markAsUnread(notification);
-            }),
-            _buildIconButton(Icons.delete, Colors.red, () {
-              rxNotificationController.deleteNotification(notification);
-            }),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
