@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
-import 'package:radar/models/conversation_model.dart';
+import 'package:radar/models/chat/conversation_model.dart';
 
 class ConversationController extends GetxController {
   var conversations = <Conversation>[].obs; // Liste observable de conversations
@@ -26,21 +26,12 @@ class ConversationController extends GetxController {
     }
   }
 
-  // Méthode pour écouter les nouvelles conversations en temps réel
-  void listenForNewConversations() {
-    _firestore.collection('conversations').snapshots().listen((snapshot) {
-      conversations.value = snapshot.docs.map((doc) {
-        return Conversation.fromMap(doc.data());
-      }).toList();
-    });
-  }
-
   // Méthode pour créer une nouvelle conversation
-  Future<void> createConversation(String user1Id, String user2Id) async {
+  Future<void> createConversation(String senderId, String receiverId) async {
     try {
       final newConversation = Conversation(
-        user1Id: user1Id,
-        user2Id: user2Id,
+        senderId: senderId,
+        receiverId: receiverId,
         lastMessage: '',
         timestamp: DateTime.now(),
       );
@@ -58,12 +49,25 @@ class ConversationController extends GetxController {
   }
 
   // Méthode pour obtenir une conversation spécifique
-  Conversation? getConversation(String user1Id, String user2Id) {
+  Conversation? getConversation(String senderId, String receiverId) {
     return conversations.firstWhereOrNull(
       (conversation) =>
-          (conversation.user1Id == user1Id &&
-              conversation.user2Id == user2Id) ||
-          (conversation.user1Id == user2Id && conversation.user2Id == user1Id),
+          (conversation.senderId == senderId &&
+              conversation.receiverId == receiverId) ||
+          (conversation.senderId == receiverId &&
+              conversation.receiverId == senderId),
     );
+  }
+
+  // Méthode pour écouter les nouvelles conversations en temps réel
+  void listenForNewConversations() {
+    final Stream<List<Conversation>> conversationStream =
+        _firestore.collection('conversations').snapshots().map((snapshot) {
+      return snapshot.docs.map((doc) {
+        return Conversation.fromMap(doc.data());
+      }).toList();
+    });
+
+    conversations.bindStream(conversationStream);
   }
 }

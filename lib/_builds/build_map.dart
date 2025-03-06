@@ -20,12 +20,11 @@ Widget buildGoogleMap(GlobalKey<ScaffoldState> scaffoldKey,
       children: [
         Obx(() {
           if (rxHouseController.houses.isEmpty) {
-            return const Center(child: Text('Aucune donnée disponible.'));
+            return const Center(child: CircularProgressIndicator());
           }
-
           if (rxMapController.isMapCreated.value) {
-            if (rxMapController.isPickerMode.value != true) {
-              rxMapController.setFilteredFirebaseCircularMarker();
+            if (!rxMapController.isPickerMode.value) {
+              rxMapController.addFilteredFirebaseCircularMarker();
             }
           }
 
@@ -170,6 +169,7 @@ buildValidatePositionBtnLg() {
                         rxMapController.cameraPosition.value.target.longitude);
                     // Désactiver le mode picker House de  la maison
                     rxMapController.activateDefaultMode();
+
                     // Retourner à l'écran ajout de  la maison
                     Get.back();
                   },

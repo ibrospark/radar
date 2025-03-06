@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:radar/_builds/build_all_elements.dart';
-import 'package:radar/models/offer_subscription_model.dart';
+import 'package:radar/models/offer/offer_subscription_model.dart';
 
 class OfferSubscriptionController extends GetxController {
   var offersSubscriptions = <OfferSubscription>[].obs;

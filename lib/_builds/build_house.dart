@@ -5,6 +5,7 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:radar/_builds/build_all_elements.dart';
+import 'package:radar/_builds/build_carousel_images.dart';
 import 'package:radar/_builds/build_form.dart';
 import 'package:radar/utils/constants.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -611,7 +612,7 @@ Widget buildFilterButton() {
     backgroundColor: primaryColor,
     fixedSize: Size(Get.size.width, 40),
     onPressed: () {
-      rxMapController.setFilteredFirebaseCircularMarker();
+      rxMapController.addFilteredFirebaseCircularMarker();
     },
   );
 }
@@ -634,7 +635,8 @@ Widget buildHouseTitle() {
   return Obx(
     () => buildText(
       text: rxHouseController.currentHouse.value.title ?? "Titre non spécifié",
-      fontSize: 20,
+      fontSize: 30,
+      fontWeight: FontWeight.w800,
       overflow: TextOverflow.visible,
     ),
   );
@@ -768,7 +770,7 @@ Widget buildItineraryButton() {
       color: Colors.black,
     ),
     backgroundColor: primaryColor,
-    onPressed: () async {
+    onPressed: () {
       rxMapController.activateRouteMode();
     },
   ));
@@ -800,5 +802,33 @@ Widget buildDescriptionView() {
     text: rxHouseController.currentHouse.value.description ?? "",
     maxLines: 2,
     overflow: TextOverflow.visible,
+  );
+}
+
+Widget buildShowHousePanel() {
+  return Obx(
+    () => Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        buildCarouselImage(
+            rxHouseController.currentHouse.value.imageLinks ?? []),
+        buildSpacer(),
+        buildCategoryLabel(),
+        buildSpacer(),
+        buildHouseTitle(),
+        buildSpacer(),
+        buildPriceAndLocation(),
+        buildPublishedDate(),
+        buildLocationInfo(),
+        // buildSpacer(),
+        buildRatingBar(),
+        buildSpacer(),
+        buildRoomsInfo(),
+        buildSpacer(),
+        buildItineraryButton(),
+        buildSpacer(),
+        buildContactButton(),
+      ],
+    ),
   );
 }

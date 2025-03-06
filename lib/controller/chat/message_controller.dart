@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
-import 'package:radar/models/message_model.dart';
+import 'package:radar/models/chat/message_model.dart';
 
 class MessageController extends GetxController {
   var messages = <Message>[].obs; // Liste observable de messages

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:radar/models/offer_model.dart';
+import 'package:radar/models/offer/offer_model.dart';
 import 'package:radar/_builds/build_all_elements.dart';
 
 class OfferController extends GetxController {

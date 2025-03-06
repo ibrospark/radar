@@ -2,14 +2,13 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:custom_marker/marker_icon.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:radar/_builds/build_house.dart';
 import 'package:radar/models/houses_model.dart';
-import 'package:radar/screens/houses/show_house_panel.dart';
 import 'package:radar/utils/constants.dart';
 import 'package:radar/utils/functions.dart';
 import 'package:radar/utils/map_style.dart';
@@ -40,7 +39,7 @@ class MapController extends GetxController {
   RxSet<Marker> markers = <Marker>{}.obs;
   RxSet<Polyline> polylines = <Polyline>{}.obs;
   List<LatLng> polylineCoordinates = [];
-  PolylinePoints polylinePointsBetween = PolylinePoints();
+  Rx<PolylinePoints> polylinePointsBetween = PolylinePoints().obs;
 
   // UI State management
   RxBool isMapCreated = false.obs;
@@ -55,6 +54,7 @@ class MapController extends GetxController {
   RxBool displayFilterPanel = true.obs;
   RxBool displayDrawerBtn = true.obs;
   RxBool displayPublishBtn = true.obs;
+  RxDouble distanceInMeters = 0.0.obs;
 
   // Location and Camera Management ----------------------------------------------------
   Future<void> setCurrentLocation() async {
@@ -67,7 +67,7 @@ class MapController extends GetxController {
     clearSpecificMarker('current_position');
     clearSpecificMarker('place_selection');
 
-    await setMarker(
+    await addMarker(
         currentUserLatLng.value, 'current_position', 'currentPosition');
   }
 
@@ -102,13 +102,14 @@ class MapController extends GetxController {
     );
   }
 
+// Quand la caméra est immobile
   void onCameraIdle() {
     final latLng = cameraPosition.value.target;
     currentCameraIdleLatLng.value = latLng;
   }
 
-  // Marker Management -----------------------------------------------------------------
-  Future<void> setMarker(LatLng position, String idMarker, String type) async {
+  //  Ajouter un marqueur sur la carte
+  Future<void> addMarker(LatLng position, String idMarker, String type) async {
     final iconPath = markerIcons[type] ?? markerIcons['other']!;
     final markerIcon = await getBytesFromAsset(iconPath, 100);
 
@@ -119,11 +120,12 @@ class MapController extends GetxController {
     ));
   }
 
-  Future<void> setFilteredFirebaseCircularMarker() async {
+  Future<void> addFilteredFirebaseCircularMarker() async {
     try {
       List<House> houses = await _fetchHousesFromFirebase();
       List<House> filteredHouses = _applyFilters(houses);
-      _updateMarkers(filteredHouses);
+      await _updateMarkers(
+          filteredHouses); // Déplacer la logique de mise à jour ici.
       _showResultsSnackbar(filteredHouses);
       _adjustCameraToMarkers();
     } catch (e) {
@@ -134,8 +136,11 @@ class MapController extends GetxController {
   Future<List<House>> _fetchHousesFromFirebase() async {
     CollectionReference<Map<String, dynamic>> collectionHouses =
         FirebaseFirestore.instance.collection('houses');
-    QuerySnapshot<Map<String, dynamic>> snapshots =
-        await collectionHouses.get();
+
+    // Limitez les résultats pour ne pas charger trop de données
+    QuerySnapshot<Map<String, dynamic>> snapshots = await collectionHouses
+        .limit(50) // Limitez à 50 maisons par requête
+        .get();
     return snapshots.docs
         .map((doc) => House.fromMap(doc.data(), doc.id))
         .toList();
@@ -219,7 +224,7 @@ class MapController extends GetxController {
               LatLng(houseData.coords!.latitude, houseData.coords!.longitude),
           onTap: () {
             rxHouseController.currentHouse.value = houseData;
-            openModalBottomSheet(ShowHousePanel());
+            openModalBottomSheet(buildShowHousePanel());
           },
         ),
       );
@@ -260,13 +265,13 @@ class MapController extends GetxController {
     if (houses.isNotEmpty) {
       Get.snackbar(
         "Bien(s) trouvé(s) !",
-        "Nous avons trouvé ${houses.length} résultat(s) !",
+        "Nous avons trouvé ${houses.length} bien(s) sur la carte!",
         backgroundColor: Colors.green,
       );
     } else {
       Get.snackbar(
         "Désolé !",
-        "Aucun résultat trouvé !",
+        "Aucun bien trouvé !",
         backgroundColor: Colors.redAccent,
       );
     }
@@ -280,35 +285,6 @@ class MapController extends GetxController {
     );
     print(error.toString());
   }
-
-  // void setFirebaseCircularMarker() {
-  //   FirebaseFirestore.instance.collection('houses').snapshots().listen(
-  //     (snapshot) async {
-  //       clearMarkersExcept(['current_position']);
-  //       for (var doc in snapshot.docs) {
-  //         var houseData = House.fromMap(doc.data(), doc.id);
-  //         markers.add(
-  //           Marker(
-  //               icon: await MarkerIcon.downloadResizePictureCircle(
-  //                   houseData.imageLinks!.isNotEmpty
-  //                       ? houseData.imageLinks!.first
-  //                       : "https://firebasestorage.googleapis.com/v0/b/radar-2024.appspot.com/o/default%2Fempty.png?alt=media&token=faadf156-26ce-4973-b130-b7a723247124",
-  //                   size: 150,
-  //                   addBorder: true,
-  //                   borderColor: Colors.white,
-  //                   borderSize: 15),
-  //               markerId: MarkerId(houseData.id!),
-  //               position: LatLng(
-  //                   houseData.coords!.latitude, houseData.coords!.longitude),
-  //               onTap: () {
-  //                 rxHouseController.currentHouse.value = houseData;
-  //                 openModalBottomSheet(ShowHousePanel());
-  //               }),
-  //         );
-  //       }
-  //     },
-  //   );
-  // }
 
   void clearMarkers() {
     markers.clear();
@@ -372,7 +348,7 @@ class MapController extends GetxController {
       );
 
       // Place un marqueur sur la carte aux coordonnées du lieu sélectionné.
-      rxMapController.setMarker(
+      rxMapController.addMarker(
         LatLng(
           place['geometry']['location']['lat'],
           place['geometry']['location']['lng'],
@@ -386,125 +362,114 @@ class MapController extends GetxController {
     }
   }
 
-  Future<void> getRouteBetweenCoordinates(
-      double startLat, double startLng, double endLat, double endLng) async {
-    try {
-      // Préparation de la requête pour les coordonnées
-      // Préparation de la requête pour les coordonnées
-      final request = PolylineRequest(
-        origin: PointLatLng(startLat, startLng),
-        destination: PointLatLng(endLat, endLng),
-        mode: TravelMode.walking,
-      );
-
-      // Récupération du résultat via l'API
-      final result = await polylinePointsBetween.getRouteBetweenCoordinates(
-        request: request,
-        googleApiKey: googleMapApiKey,
-      );
-
-      // Vérification si des points ont été retournés
-      if (result.points.isNotEmpty) {
-        // Conversion des points en LatLng (pour Google Maps)
-        final polylineCoordinates = result.points
-            .map((point) => LatLng(point.latitude, point.longitude))
-            .toList();
-
-        // Ajout des polylignes à la carte
-        polylines.add(
-          Polyline(
-            polylineId:
-                const PolylineId("poly"), // Identifiant unique de la polyligne
-            width: 4, // Épaisseur de la ligne
-            color: primaryColor, // Couleur de la ligne
-            points: polylineCoordinates, // Liste des points de la polyligne
-          ),
-        );
-      } else {
-        // Gestion des cas où aucun point n'est retourné
-        _logDebugMessage('Erreur : Aucun point trouvé pour cet itinéraire.');
-      }
-    } catch (e) {
-      // Gestion des erreurs générales
-      _logDebugMessage('Erreur lors de la récupération de la route : $e');
-    }
-  }
-
-  // Méthode utilitaire pour afficher les messages en mode debug
-  void _logDebugMessage(String message) {
-    if (kDebugMode) {
-      print(message);
-    }
-  }
-
-  activateDefaultMode() {
-    isPickerMode.value = false;
-    isRouteMode.value = false;
-    displayCurrentPositionBtnCircular.value = true;
-    displayCurrentPositionBtnLg.value = false;
-    displaySearchLocationBar.value = true;
-    displayIconPickerHouse.value = false;
-    displayValidatePositionBtnLg.value = false;
-    displayFilterPanel.value = true;
-    displayDrawerBtn.value = true;
-    displayPublishBtn.value = true;
-    rxHouseController.startHousesStream();
-    clearPolylines();
+  Future<void> activateDefaultMode() async {
+    isPickerMode.value = false; //Picker mode
+    isRouteMode.value = false; //Route mode
+    displayCurrentPositionBtnCircular.value = true; //Current position button
+    displayCurrentPositionBtnLg.value = false; //Current position button
+    displaySearchLocationBar.value = true; //Search location bar
+    displayIconPickerHouse.value = false; //Icon picker house
+    displayValidatePositionBtnLg.value = false; //Validate position button
+    displayFilterPanel.value = true; //Filter panel
+    displayDrawerBtn.value = true; //Drawer button
+    displayPublishBtn.value = true; //Publish button
+    rxHouseController.startHousesStream(); //  Start listening to houses stream
+    clearPolylines(); //Clear polylines
   }
 
   void activatePickerMode() {
-    rxMapController.clearMarkers();
-    rxMapController.clearPolylines();
+    isPickerMode.value = true; //Picker mode
+    isRouteMode.value = false; //Route mode
+    displayCurrentPositionBtnCircular.value = false; //Current position button
+    displayCurrentPositionBtnLg.value = true; //Current position button
+    displaySearchLocationBar.value = true; //Search location bar
+    displayIconPickerHouse.value = true; //Icon picker house
+    displayValidatePositionBtnLg.value = true; //Validate position button
+    displayFilterPanel.value = false; //Filter panel
+    displayDrawerBtn.value = false; //Drawer button
+    displayPublishBtn.value = false; //Publish button
     rxHouseController.stopHousesStream();
-    // Update UI state
-    isPickerMode.value = true;
-    isRouteMode.value = false;
-    displayCurrentPositionBtnCircular.value = false;
-    displayCurrentPositionBtnLg.value = true;
-    displaySearchLocationBar.value = true;
-    displayIconPickerHouse.value = true;
-    displayValidatePositionBtnLg.value = true;
-    displayFilterPanel.value = false;
-    displayDrawerBtn.value = false;
-    displayPublishBtn.value = false;
+    clearMarkersExcept(['current_position']);
+    clearPolylines();
   }
 
-  // --------------------------------------------------------------
-  void activateRouteMode() {
-    setCurrentLocation();
-
+  Future<void> activateRouteMode() async {
     clearPolylines();
     clearMarkersExcept(
         ['current_position', rxHouseController.currentHouse.value.id!]);
 
-    // Update UI state
-    isPickerMode.value = false;
-    isRouteMode.value = true;
-    displayCurrentPositionBtnCircular.value = false;
-    displayCurrentPositionBtnLg.value = false;
-    displaySearchLocationBar.value = false;
-    displayIconPickerHouse.value = false;
-    displayValidatePositionBtnLg.value = false;
-    displayFilterPanel.value = false;
-    displayDrawerBtn.value = false;
-    displayPublishBtn.value = false;
+    isPickerMode.value = false; //Picker mode
+    isRouteMode.value = true; //Route mode
+    displayCurrentPositionBtnCircular.value = false; //Current position button
+    displayCurrentPositionBtnLg.value = false; //Current position button
+    displaySearchLocationBar.value = false; //Search location bar
+    displayIconPickerHouse.value = false; //Icon picker house
+    displayValidatePositionBtnLg.value = false; //Validate position button
+    displayFilterPanel.value = false; //Filter panel
+    displayDrawerBtn.value = false; //Drawer button
+    displayPublishBtn.value = false; //Publish button
 
+    final currentHouseCoords = rxHouseController.currentHouse.value.coords!;
+    setCurrentLocation();
+    // Dessiner la route et ajouter les marqueurs
     drawRoute(
-        rxMapController.currentUserLatLng.value.latitude,
-        rxMapController.currentUserLatLng.value.longitude,
-        rxHouseController.currentHouse.value.coords!.latitude,
-        rxHouseController.currentHouse.value.coords!.longitude);
-    calculateDistanceBetweenPoints(
-        rxMapController.currentUserLatLng.value.latitude,
-        rxMapController.currentUserLatLng.value.longitude,
-        rxHouseController.currentHouse.value.coords!.latitude,
-        rxHouseController.currentHouse.value.coords!.longitude);
+        currentUserLatLng.value.latitude,
+        currentUserLatLng.value.longitude,
+        currentHouseCoords.latitude,
+        currentHouseCoords.longitude);
 
+    // Calculer la distance entre les points
+    calculateDistanceBetweenPoints(
+        currentUserLatLng.value.latitude,
+        currentUserLatLng.value.longitude,
+        currentHouseCoords.latitude,
+        currentHouseCoords.longitude);
     Get.back();
   }
 
-  // --------------------------------------------------------------
+// OK --------------------------------------------------------
 
+  Future<void> drawRoute(double originLat, double originLng,
+      double destinationLat, double destinationLng) async {
+    final String url =
+        'https://maps.googleapis.com/maps/api/directions/json?origin=$originLat,$originLng&destination=$destinationLat,$destinationLng&key=$googleMapApiKey';
+
+    try {
+      final response = await http.get(Uri.parse(url));
+      final data = json.decode(response.body);
+
+      if (data['status'] == 'OK') {
+        List<PointLatLng> points = PolylinePoints()
+            .decodePolyline(data['routes'][0]['overview_polyline']['points']);
+
+        List<LatLng> latLngPoints = points
+            .map((point) => LatLng(point.latitude, point.longitude))
+            .toList();
+
+        polylines.add(
+          Polyline(
+            polylineId: PolylineId('route'),
+            points: latLngPoints,
+            color: primaryColor,
+            width: 5,
+          ),
+        );
+      } else {
+        throw Exception('Failed to load route: ${data['status']}');
+      }
+    } catch (e) {
+      print('Error fetching route: $e');
+    }
+  }
+
+// OK --------------------------------------------------------
+  void calculateDistanceBetweenPoints(
+      double lat1, double lon1, double lat2, double lon2) {
+    double distance = Geolocator.distanceBetween(lat1, lon1, lat2, lon2);
+    distanceInMeters.value = distance;
+  }
+
+  // OK --------------------------------------------------------
   Future<void> openMap(double originLat, double originLong,
       double destinationLat, double destinationLong) async {
     if (GetPlatform.isAndroid) {
@@ -517,49 +482,5 @@ class MapController extends GetxController {
         throw 'Could not launch $googleUrl';
       }
     }
-  }
-
-  Future<void> drawRoute(double originLat, double originLng,
-      double destinationLat, double destinationLng) async {
-    final LatLng origin = LatLng(originLat, originLng);
-    final LatLng destination = LatLng(destinationLat, destinationLng);
-    // Add markers for origin and destination
-
-    // Fetch route from Google Directions API
-    final String url =
-        'https://maps.googleapis.com/maps/api/directions/json?origin=${origin.latitude},${origin.longitude}&destination=${destination.latitude},${destination.longitude}&key=$googleMapApiKey';
-
-    final response = await http.get(Uri.parse(url));
-    final data = json.decode(response.body);
-
-    print('Directions API Response: $data'); // Debug log
-
-    if (data['status'] == 'OK') {
-      List<PointLatLng> points = PolylinePoints()
-          .decodePolyline(data['routes'][0]['overview_polyline']['points']);
-
-      List<LatLng> latLngPoints = points
-          .map((point) => LatLng(point.latitude, point.longitude))
-          .toList();
-
-      polylines.add(
-        Polyline(
-          polylineId: PolylineId('route'),
-          points: latLngPoints,
-          color: primaryColor,
-          width: 5,
-        ),
-      );
-    } else {
-      throw Exception('Failed to load route: ${data['status']}');
-    }
-  }
-
-  RxDouble distanceInMeters = 0.0.obs;
-
-  void calculateDistanceBetweenPoints(
-      double lat1, double lon1, double lat2, double lon2) {
-    double distance = Geolocator.distanceBetween(lat1, lon1, lat2, lon2);
-    distanceInMeters.value = distance;
   }
 }

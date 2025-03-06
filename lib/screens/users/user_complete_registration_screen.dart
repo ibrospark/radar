@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:radar/models/user_model.dart';
 import 'package:radar/_builds/build_all_elements.dart';
 import 'package:radar/_builds/build_form.dart';
 import 'package:radar/_builds/build_user.dart';
 import 'package:radar/utils/constants.dart';
+import 'package:radar/utils/routes.dart';
 
 class UserCompleteRegistrationScreen extends StatefulWidget {
   const UserCompleteRegistrationScreen({super.key});
@@ -82,19 +84,21 @@ class _UserCompleteRegistrationScreenState
                           if (formKey.currentState!.validate()) {
                             // formKey.currentState!.save();
                             // Call the controller to save the data
-                            rxUserController.updateUser(UserModel(
-                              id: rxUserController.currentUser.value!.id,
-                              lastName: rxUserController
-                                  .lastNameController.value.text,
-                              firstName: rxUserController
-                                  .firstNameController.value.text,
-                              email:
-                                  rxUserController.emailController.value.text,
-                              accountType:
-                                  rxUserController.selectedAccountType.value,
-                              gender: rxUserController.selectedGender.value,
-                              profileComplete: true,
-                            ));
+                            rxUserController
+                                .updateUser(UserModel(
+                                  id: rxUserController.currentUser.value!.id,
+                                  lastName: rxUserController
+                                      .lastNameController.value.text,
+                                  firstName: rxUserController
+                                      .firstNameController.value.text,
+                                  email: rxUserController
+                                      .emailController.value.text,
+                                  accountType: rxUserController
+                                      .selectedAccountType.value,
+                                  gender: rxUserController.selectedGender.value,
+                                  profileComplete: true,
+                                ))
+                                .then((_) => Get.toNamed(Routes.home));
                           }
                         },
                         backgroundColor: primaryColor),

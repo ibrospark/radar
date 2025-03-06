@@ -26,7 +26,16 @@ class AuthController extends GetxController {
     startCountdown();
   }
 
+  void sendOtpCode() {
+    if (phoneNumber.isNotEmpty) {
+      verifyPhoneNumber(phoneNumber.value);
+    } else {
+      _showErrorSnackbar("Numéro de téléphone non valide.");
+    }
+  }
+
   void verifyPhoneNumber(String phoneNumber) async {
+    isLoading.value = true;
     try {
       await _auth.verifyPhoneNumber(
         phoneNumber: phoneNumber,
@@ -40,6 +49,7 @@ class AuthController extends GetxController {
           this.verificationId.value = verificationId;
           _showSuccessSnackbar("Vérifiez vos SMS.");
           Get.toNamed(Routes.verificationOtp);
+          isLoading.value = false;
         },
         codeAutoRetrievalTimeout: (String verificationId) {
           this.verificationId.value = verificationId;
@@ -47,6 +57,19 @@ class AuthController extends GetxController {
       );
     } catch (e) {
       _showErrorSnackbar("Une erreur est survenue lors de la vérification: $e");
+    } finally {}
+  }
+
+  Future<void> signInWithOTP(String verificationId, String smsCode) async {
+    isLoading.value = true;
+    try {
+      final credential = PhoneAuthProvider.credential(
+          verificationId: verificationId, smsCode: smsCode);
+      await _signInWithCredential(credential);
+    } catch (e) {
+      _showErrorSnackbar("Code incorrect ou expiré.");
+    } finally {
+      isLoading.value = false;
     }
   }
 
@@ -76,48 +99,35 @@ class AuthController extends GetxController {
   }
 
   Future<void> _registerNewUser(UserCredential userCredential) async {
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(userCredential.user?.uid)
-        .set({
-      'Id': userCredential.user?.uid,
-      'Avatar':
-          'https://firebasestorage.googleapis.com/v0/b/radar-2024.appspot.com/o/default%2Favatar.png?alt=media&token=7aa4a52d-83c3-45ec-ae93-c9566a484b75',
-      'Tel': userCredential.user?.phoneNumber,
-      'Date inscription': DateTime.now(),
-      'Type de compte': "Starter",
-      'Statut': 0,
-      'profileComplete': false,
-      'fcmToken': '',
-    });
-
-    // Abonnement de 5 publications
-    rxOfferSubscriptionController.addSubscription(
-      name: 'Offre Starter',
-      price: 0,
-      numberOfPublication: 5,
-      numberOfDay: 90,
-    );
-  }
-
-  Future<void> signInWithOTP(String verificationId, String smsCode) async {
     isLoading.value = true;
     try {
-      final credential = PhoneAuthProvider.credential(
-          verificationId: verificationId, smsCode: smsCode);
-      await _signInWithCredential(credential);
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userCredential.user?.uid)
+          .set({
+        'Id': userCredential.user?.uid,
+        'Avatar':
+            'https://firebasestorage.googleapis.com/v0/b/radar-2024.appspot.com/o/default%2Favatar.png?alt=media&token=7aa4a52d-83c3-45ec-ae93-c9566a484b75',
+        'Tel': userCredential.user?.phoneNumber,
+        'Date inscription': DateTime.now(),
+        'Type de compte': "Starter",
+        'Statut': 0,
+        'profileComplete': false,
+        'fcmToken': '',
+      });
+
+      // Abonnement de 5 publications
+      rxOfferSubscriptionController.addSubscription(
+        name: 'Offre Starter',
+        price: 0,
+        numberOfPublication: 5,
+        numberOfDay: 90,
+      );
     } catch (e) {
-      _showErrorSnackbar("Code incorrect ou expiré.");
+      _showErrorSnackbar(
+          "Erreur lors de l'enregistrement de l'utilisateur: $e");
     } finally {
       isLoading.value = false;
-    }
-  }
-
-  void sendOtpCode() {
-    if (phoneNumber.isNotEmpty) {
-      verifyPhoneNumber(phoneNumber.value);
-    } else {
-      _showErrorSnackbar("Numéro de téléphone non valide.");
     }
   }
 

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:radar/_builds/build_all_elements.dart';
 import 'package:radar/_builds/build_form.dart';
-import 'package:radar/models/offer_model.dart';
+import 'package:radar/models/offer/offer_model.dart';
 import 'package:radar/utils/constants.dart';
 
 class OfferEditScreen extends StatelessWidget {

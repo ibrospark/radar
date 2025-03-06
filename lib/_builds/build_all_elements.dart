@@ -194,12 +194,14 @@ buildLabelWithText({
 buildFloatingActionButton({
   onPressed,
   tooltip,
+  backgroundColor = primaryColor,
+  child = const Icon(Icons.add),
 }) {
   return FloatingActionButton(
     tooltip: tooltip,
-    backgroundColor: secondaryColor,
+    backgroundColor: backgroundColor,
     onPressed: onPressed,
-    child: const Icon(Icons.add),
+    child: child,
   );
 }
 
@@ -292,7 +294,6 @@ Widget _buildImage(String imageUrl, ImageType imageType, double radius) {
     case ImageType.File:
       return _buildImageFromFile(imageUrl, radius);
     case ImageType.Network:
-    default:
       return _buildImageFromNetwork(imageUrl, radius);
   }
 }

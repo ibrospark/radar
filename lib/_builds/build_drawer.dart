@@ -127,6 +127,9 @@ Drawer buildDrawer() {
               color: white,
               fontWeight: FontWeight.w600,
             ),
+            onTap: () {
+              Get.toNamed(Routes.userList);
+            },
           ),
           divider,
           ListTile(
@@ -216,6 +219,9 @@ Drawer buildDrawer() {
               fontSize: 18,
               color: white,
               fontWeight: FontWeight.w600,
+            ),
+            onTap: () => Get.toNamed(
+              Routes.activityZoneScreen,
             ),
           ),
           divider,

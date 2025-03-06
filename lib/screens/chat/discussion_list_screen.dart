@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:radar/_builds/build_all_elements.dart';
-import 'package:radar/models/conversation_model.dart';
+import 'package:radar/models/chat/conversation_model.dart';
 import 'package:radar/screens/chat/chat_sceen.dart';
 import 'package:radar/utils/constants.dart';
 
-class UserListScreen extends StatelessWidget {
-  const UserListScreen({super.key});
+class DiscussionListScreen extends StatelessWidget {
+  const DiscussionListScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: buildAppBar(
-        title: "Discussions",
+        title: "Discuter avec les utilisateurs",
       ),
       body: Obx(() {
         return ListView.builder(
@@ -31,8 +31,8 @@ class UserListScreen extends StatelessWidget {
                 if (conversation == null) {
                   // Si aucune conversation n'existe, créez-en une nouvelle
                   rxConversationController.conversations.add(Conversation(
-                    user1Id: rxUserController.users.first.id,
-                    user2Id: user.id,
+                    senderId: rxUserController.users.first.id,
+                    receiverId: user.id,
                     lastMessage: '',
                     timestamp: DateTime.now(),
                   ));
@@ -44,6 +44,10 @@ class UserListScreen extends StatelessWidget {
           },
         );
       }),
+      floatingActionButton: buildFloatingActionButton(
+        tooltip: "Créer une conversation",
+        onPressed: () {},
+      ),
     );
   }
 }

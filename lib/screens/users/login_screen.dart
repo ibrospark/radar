@@ -16,11 +16,6 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
-    dispose() {
-      rxAuthController.isLoading.value = false;
-      super.dispose();
-    }
-
     return Scaffold(
       body: Obx(() {
         return SingleChildScrollView(
@@ -94,11 +89,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       onPressed: rxAuthController.isLoading.value == true
                           ? null
                           : () {
-                              final String phoneNumber =
+                              final String numberPhone =
                                   rxAuthController.phoneNumber.value.trim();
 
-                              if (isValidPhoneNumber(phoneNumber)) {
-                                rxAuthController.verifyPhoneNumber(phoneNumber);
+                              if (isValidPhoneNumber(numberPhone)) {
+                                rxAuthController.verifyPhoneNumber(numberPhone);
                               } else {
                                 Get.snackbar(
                                   'Erreur',
