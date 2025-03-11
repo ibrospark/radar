@@ -28,26 +28,24 @@ Widget buildGoogleMap(GlobalKey<ScaffoldState> scaffoldKey,
             }
           }
 
-          return Obx(
-            () => GoogleMap(
-              initialCameraPosition: CameraPosition(
-                target: rxMapController.currentUserLatLng.value,
-                zoom: 14.0,
-              ),
-              zoomGesturesEnabled: true,
-              mapType: MapType.normal,
-              onTap: (value) {
-                rxDraggableScrollableSheetController
-                    .resetExtent(draggableScrollableController!);
-              },
-              markers: rxMapController.markers,
-              polylines: rxMapController.polylines,
-              onMapCreated: rxMapController.onMapCreated,
-              onCameraIdle: rxMapController.onCameraIdle,
-              onCameraMove: (CameraPosition cameraPosition) {
-                rxMapController.cameraPosition.value = cameraPosition;
-              },
+          return GoogleMap(
+            initialCameraPosition: CameraPosition(
+              target: rxMapController.currentUserLatLng.value,
+              zoom: 14.0,
             ),
+            zoomGesturesEnabled: true,
+            mapType: MapType.normal,
+            onTap: (value) {
+              rxDraggableScrollableSheetController
+                  .resetExtent(draggableScrollableController!);
+            },
+            markers: rxMapController.markers,
+            polylines: rxMapController.polylines,
+            onMapCreated: rxMapController.onMapCreated,
+            onCameraIdle: rxMapController.onCameraIdle,
+            onCameraMove: (CameraPosition cameraPosition) {
+              rxMapController.cameraPosition.value = cameraPosition;
+            },
           );
         }),
         buildIconMap(),

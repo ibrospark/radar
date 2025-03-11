@@ -45,7 +45,7 @@ Widget buildImageDialog(List<String> images, int initialIndex) {
     itemCount: images.length,
     options: CarouselOptions(
       initialPage: initialIndex,
-      height: Get.size.height * 0.7,
+      height: Get.size.height * 0.6,
       enableInfiniteScroll: false,
     ),
     itemBuilder: (context, index, realIndex) {

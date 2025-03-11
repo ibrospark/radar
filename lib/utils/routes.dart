@@ -3,19 +3,17 @@ import 'package:get/get.dart';
 import 'package:get/get_navigation/src/routes/get_route.dart';
 import 'package:radar/main.dart';
 import 'package:radar/screens/activity_zone/activity_zone_list_screen.dart';
-import 'package:radar/screens/chat/discussion_list_screen.dart';
+import 'package:radar/screens/chat/chat_list_screen.dart';
 import 'package:radar/screens/users/verification_otp_screen.dart';
 import 'package:radar/screens/houses/add_house_screen.dart';
 import 'package:radar/screens/maps/main_maps_screen.dart';
 import 'package:radar/screens/maps/search_place_screen.dart';
 import 'package:radar/screens/notifications/notifications_screen.dart';
 import 'package:radar/screens/offer/offer_add_screen.dart';
-import 'package:radar/screens/offer/offer_index_screen.dart';
 import 'package:radar/screens/offer/offer_list_screen.dart';
 import 'package:radar/screens/offer/subscription_offer_screen.dart';
 import 'package:radar/screens/users/settings_screen.dart';
 import 'package:radar/screens/users/user_complete_registration_screen.dart';
-import 'package:radar/screens/chat/chat_user_list_creen.dart';
 import 'package:radar/screens/users/user_settings_screen.dart';
 
 class Routes {
@@ -26,7 +24,6 @@ class Routes {
   static const String verificationOtp = '/verification-otp';
   static const String settings = '/settings';
   static const String userSettings = '/user-settings';
-  static const String userList = '/user-list';
   static const String userCompleteRegistration = '/user-complete-registration';
 
   // Map
@@ -44,7 +41,7 @@ class Routes {
   static const String notifications = '/notifications';
   // Chat
   static const String discussionList = '/discussion-list';
-  static const String chatUserList = '/chat-user-list';
+  static const String ChatListScreen = '/chat-list';
   // Activity Zone
   static const String activityZoneScreen = '/activity-zone';
 }
@@ -60,10 +57,6 @@ List<GetPage<dynamic>> routesList = [
     name: Routes.verificationOtp,
     page: () => const VerificationOtpScreen(),
   ),
-  // GetPage(
-  //   name: Routes.userList,
-  //   page: () => const UserListScreen(),
-  // ),
   GetPage(
     name: Routes.settings,
     page: () => const SettingsScreen(),
@@ -110,13 +103,10 @@ List<GetPage<dynamic>> routesList = [
     page: () => NotificationScreen(),
   ),
   // Chat----------------------------
+
   GetPage(
-    name: Routes.discussionList,
-    page: () => DiscussionListScreen(),
-  ),
-  GetPage(
-    name: Routes.chatUserList,
-    page: () => ChatUserListCreen(),
+    name: Routes.ChatListScreen,
+    page: () => ChatListScreen(),
   ),
   // Activity Zone----------------------------
   GetPage(

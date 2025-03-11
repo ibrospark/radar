@@ -61,7 +61,7 @@ class MapController extends GetxController {
     Position position = await determineCurrentPosition();
 
     moveCamera(position.latitude, position.longitude);
-    // Define current user locationxz
+    // Define current user location
     currentUserLatLng.value = LatLng(position.latitude, position.longitude);
 
     clearSpecificMarker('current_position');
@@ -410,9 +410,10 @@ class MapController extends GetxController {
     displayPublishBtn.value = false; //Publish button
 
     final currentHouseCoords = rxHouseController.currentHouse.value.coords!;
-    setCurrentLocation();
+
+    await setCurrentLocation();
     // Dessiner la route et ajouter les marqueurs
-    drawRoute(
+    await drawRoute(
         currentUserLatLng.value.latitude,
         currentUserLatLng.value.longitude,
         currentHouseCoords.latitude,

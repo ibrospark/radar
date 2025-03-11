@@ -1,36 +1,36 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class MessageModel {
-  String messageId;
+class ChatModel {
+  String id;
   String senderId;
   String receiverId;
-  String content;
+  String lastMessage;
   Timestamp timestamp;
 
-  MessageModel({
-    required this.messageId,
+  ChatModel({
+    required this.id,
     required this.senderId,
     required this.receiverId,
-    required this.content,
+    required this.lastMessage,
     required this.timestamp,
   });
 
-  factory MessageModel.fromMap(Map<String, dynamic> data) {
-    return MessageModel(
-      messageId: data['messageId'],
+  factory ChatModel.fromMap(Map<String, dynamic> data) {
+    return ChatModel(
+      id: data['id'],
       senderId: data['senderId'],
       receiverId: data['receiverId'],
-      content: data['content'],
+      lastMessage: data['lastMessage'],
       timestamp: data['timestamp'],
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
-      'messageId': messageId,
+      'id': id,
       'senderId': senderId,
       'receiverId': receiverId,
-      'content': content,
+      'lastMessage': lastMessage,
       'timestamp': timestamp,
     };
   }

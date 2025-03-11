@@ -1,12 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
+import 'package:radar/_builds/build_all_elements.dart';
 import 'package:radar/controller/chat/chat_controller.dart';
 import 'package:radar/models/chat/message_model.dart';
 import 'package:radar/utils/constants.dart';
 
 final TextEditingController messageControllerText = TextEditingController();
 
+class MessageScreen extends StatelessWidget {
+  MessageScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: buildAppBar(title: "Messages"),
+      body: Column(
+        children: [
+          Expanded(
+            child: Obx(() {
+              return buildMessageList(rxChatController.messageList);
+            }),
+          ),
+          buildMessageInput(),
+        ],
+      ),
+    );
+  }
+}
+
 Widget buildMessageList(List<MessageModel> messages) {
   return ListView.builder(
+    reverse: true,
     itemCount: messages.length,
     itemBuilder: (context, index) {
       final message = messages[index];
@@ -63,7 +87,6 @@ Widget buildMessageInput() {
           Expanded(
             child: TextField(
               controller: messageControllerText,
-              // style: TextStyle(color: white),
               decoration: InputDecoration(
                 hintText: 'Saisissez votre message...',
                 hintStyle: TextStyle(color: white),
@@ -92,10 +115,14 @@ Widget buildMessageInput() {
             ),
             onPressed: () {
               if (messageControllerText.text.isNotEmpty) {
-                // Send the message
                 ChatController().sendMessage(
-                    'defaultSenderId', user!.uid, messageControllerText.text);
-                messageControllerText.clear(); // Clear the text field
+                    rxChatController.generateChatId(
+                      user!.uid,
+                      rxChatController.receiverId.value,
+                    ),
+                    user!.uid,
+                    messageControllerText.text);
+                messageControllerText.clear();
               }
             },
           ),

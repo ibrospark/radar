@@ -83,7 +83,7 @@ Drawer buildDrawer() {
               fontWeight: FontWeight.w600,
             ),
             onTap: () {
-              Get.toNamed(Routes.mainMap);
+              Get.back();
             },
           ),
           divider,
@@ -128,7 +128,7 @@ Drawer buildDrawer() {
               fontWeight: FontWeight.w600,
             ),
             onTap: () {
-              Get.toNamed(Routes.userList);
+              Get.toNamed(Routes.ChatListScreen);
             },
           ),
           divider,
