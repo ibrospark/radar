@@ -623,9 +623,14 @@ Widget buildCategoryLabel() {
   return Obx(
     () => Container(
       padding: const EdgeInsets.all(10),
-      decoration: const BoxDecoration(color: primaryColor),
+      decoration: const BoxDecoration(
+        color: primaryColor,
+      ),
       child: buildText(
         text: rxHouseController.currentHouse.value.category ?? "Non spécifié",
+        fontSize: 20,
+        fontStyle: FontStyle.italic,
+        fontWeight: FontWeight.w800,
       ),
     ),
   );
@@ -650,8 +655,7 @@ Widget buildPriceAndLocation() {
         buildText(
           text:
               "${rxHouseController.currentHouse.value.price ?? "Prix non spécifié"} ${rxHouseController.currentHouse.value.currency ?? "Devise non spécifiée"} ${rxHouseController.currentHouse.value.rentalDuration ?? "Durée locative non spécifiée"}",
-          fontSize: 20,
-          fontStyle: FontStyle.italic,
+          fontSize: 30,
           fontWeight: FontWeight.w800,
           color: primaryColor,
         ),
@@ -669,13 +673,16 @@ Widget buildPublishedDate() {
     () => RichText(
       text: TextSpan(
         text: 'Publié le :  ',
-        style: buildTextStyle(color: Colors.black),
+        style: buildTextStyle(
+          color: Colors.black,
+          fontSize: 20,
+        ),
         children: [
           TextSpan(
             text: rxHouseController.currentHouse.value.createdAt != null
                 ? '${rxHouseController.currentHouse.value.createdAt!.day}-${rxHouseController.currentHouse.value.createdAt!.month}-${rxHouseController.currentHouse.value.createdAt!.year}'
                 : 'Date non spécifiée',
-            style: const TextStyle(fontWeight: FontWeight.bold),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
           ),
         ],
       ),
@@ -798,11 +805,30 @@ Widget buildContactButton() {
 }
 
 Widget buildDescriptionView() {
-  return buildText(
-    text: rxHouseController.currentHouse.value.description ?? "",
-    maxLines: 2,
-    overflow: TextOverflow.visible,
-  );
+  return Obx(() {
+    if (rxHouseController.currentHouse.value.description != null &&
+        rxHouseController.currentHouse.value.description!.isNotEmpty) {
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          buildText(
+              text: "Description",
+              fontWeight: FontWeight.w600,
+              fontSize: 20,
+              overflow: TextOverflow.visible,
+              textAlign: TextAlign.start),
+          buildSpacer(),
+          buildText(
+              text: rxHouseController.currentHouse.value.description ?? "",
+              overflow: TextOverflow.visible,
+              textAlign: TextAlign.start),
+        ],
+      );
+    } else {
+      return Container();
+    }
+  });
 }
 
 Widget buildShowHousePanel() {
@@ -820,14 +846,14 @@ Widget buildShowHousePanel() {
         buildPriceAndLocation(),
         buildPublishedDate(),
         buildLocationInfo(),
-        // buildSpacer(),
         buildRatingBar(),
         buildSpacer(),
         buildRoomsInfo(),
         buildSpacer(),
         buildItineraryButton(),
-        buildSpacer(),
         buildContactButton(),
+        buildSpacer(),
+        buildDescriptionView(),
       ],
     ),
   );

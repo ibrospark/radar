@@ -6,12 +6,14 @@ import 'package:radar/controller/chat/chat_controller.dart';
 import 'package:radar/models/user_model.dart';
 
 class UserListScreen extends StatefulWidget {
+  const UserListScreen({super.key});
+
   @override
   _UserListScreenState createState() => _UserListScreenState();
 }
 
 class _UserListScreenState extends State<UserListScreen> {
-  FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   TextEditingController searchController = TextEditingController();
   List<UserModel> userList = [];
   List<UserModel> filteredList = [];

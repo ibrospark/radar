@@ -5,7 +5,7 @@ import 'package:radar/models/chat/message_model.dart';
 import 'package:radar/utils/constants.dart';
 
 class ChatController extends GetxController {
-  FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // Observables
   var chatList = <ChatModel>[].obs;

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:radar/_builds/build_all_elements.dart';
+import 'package:radar/utils/constants.dart';
 
 Future<void> buildSearchContinueDialog(
   VoidCallback onCancel,
@@ -22,7 +23,10 @@ Future<void> buildSearchContinueDialog(
                 buildText(
                   text: "Souhaitez-vous passer en recherche continue?",
                   fontStyle: FontStyle.italic,
+                  textAlign: TextAlign.center,
+                  fontWeight: FontWeight.w800,
                   fontSize: 20,
+                  overflow: TextOverflow.visible,
                   color: Colors.white,
                 ),
                 const SizedBox(height: 20),
@@ -31,7 +35,7 @@ Future<void> buildSearchContinueDialog(
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: const BoxDecoration(
-                        color: Colors.yellowAccent,
+                        color: yellowColor,
                       ),
                       child: const Text(
                         'La recherche continue vous permet de recevoir des notifications lorsque le bien que vous recherchez est disponible',
@@ -72,7 +76,7 @@ Future<void> buildSearchContinueDialog(
                         label: const Text("Oui"),
                         icon: const Icon(Icons.check),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.yellowAccent,
+                          backgroundColor: yellowColor,
                           textStyle: Theme.of(context).textTheme.titleSmall,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(0),

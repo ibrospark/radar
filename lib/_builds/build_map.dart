@@ -6,11 +6,14 @@ import 'package:radar/_builds/build_all_elements.dart';
 import 'package:radar/_builds/build_draggable_scrollable_sheet.dart';
 import 'package:radar/_builds/build_form.dart';
 import 'package:radar/_builds/build_house.dart';
+import 'package:radar/controller/maps/maps_controller.dart';
 import 'package:radar/utils/constants.dart';
 import 'package:radar/utils/routes.dart';
 
-Widget buildGoogleMap(GlobalKey<ScaffoldState> scaffoldKey,
-    {DraggableScrollableController? draggableScrollableController}) {
+Widget buildGoogleMap(
+  GlobalKey<ScaffoldState> scaffoldKey, {
+  DraggableScrollableController? draggableScrollableController,
+}) {
   draggableScrollableController ??= DraggableScrollableController();
 
   return SizedBox(
@@ -28,23 +31,29 @@ Widget buildGoogleMap(GlobalKey<ScaffoldState> scaffoldKey,
             }
           }
 
-          return GoogleMap(
-            initialCameraPosition: CameraPosition(
-              target: rxMapController.currentUserLatLng.value,
-              zoom: 14.0,
-            ),
-            zoomGesturesEnabled: true,
-            mapType: MapType.normal,
-            onTap: (value) {
-              rxDraggableScrollableSheetController
-                  .resetExtent(draggableScrollableController!);
-            },
-            markers: rxMapController.markers,
-            polylines: rxMapController.polylines,
-            onMapCreated: rxMapController.onMapCreated,
-            onCameraIdle: rxMapController.onCameraIdle,
-            onCameraMove: (CameraPosition cameraPosition) {
-              rxMapController.cameraPosition.value = cameraPosition;
+          return GetBuilder<MapController>(
+            builder: (controller) {
+              return GoogleMap(
+                initialCameraPosition: CameraPosition(
+                  target: controller.currentUserLatLng.value,
+                  zoom: 14.0,
+                ),
+                zoomGesturesEnabled: true,
+                mapType: MapType.normal,
+                onTap: (value) {
+                  if (rxMapController.displayFilterPanel.value) {
+                    rxDraggableScrollableSheetController
+                        .resetExtent(draggableScrollableController!);
+                  }
+                },
+                markers: controller.markers,
+                polylines: controller.polylines,
+                onMapCreated: controller.onMapCreated,
+                onCameraIdle: controller.onCameraIdle,
+                onCameraMove: (CameraPosition cameraPosition) {
+                  controller.cameraPosition.value = cameraPosition;
+                },
+              );
             },
           );
         }),
@@ -370,6 +379,13 @@ buildDisplayRoute() {
               decoration: BoxDecoration(
                 color: Colors.black.withOpacity(0.3),
                 borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 10,
+                    spreadRadius: 2,
+                  ),
+                ],
               ),
               child: Column(
                 children: [

@@ -16,7 +16,7 @@ buildNotificationBadge(final int totalNotifications) {
       child: Padding(
         padding: const EdgeInsets.all(2.0),
         child: Text(
-          '${totalNotifications}',
+          '$totalNotifications',
           style: const TextStyle(color: Colors.white, fontSize: 10),
         ),
       ),

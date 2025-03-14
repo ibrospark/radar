@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:radar/_builds/build_all_elements.dart';
 import 'package:radar/_builds/build_form.dart';
 import 'package:radar/_builds/build_house.dart';
 import 'package:radar/utils/constants.dart';
+
+import '../../utils/routes.dart';
 
 class ActivityZoneListScreen extends StatefulWidget {
   const ActivityZoneListScreen({super.key});
@@ -20,6 +23,31 @@ class _ActivityZoneListScreenState extends State<ActivityZoneListScreen> {
     'Ngor',
     'Ouakam',
   ];
+
+  void _handleMenuSelection(String value, int index) {
+    switch (value) {
+      case 'Modifier':
+        // Handle edit action
+        _editActivityZone(index);
+        break;
+      case 'Supprimer':
+        // Handle delete action
+        _deleteActivityZone(index);
+        break;
+    }
+  }
+
+  void _editActivityZone(int index) {
+    // Implement edit functionality
+    print('Edit activity zone: ${activityZones[index]}');
+  }
+
+  void _deleteActivityZone(int index) {
+    setState(() {
+      activityZones.removeAt(index);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -52,7 +80,8 @@ class _ActivityZoneListScreenState extends State<ActivityZoneListScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 10.0),
                   child: buildElevatedButtonIcon(
                       onPressed: () {
-                        print("hello");
+                        rxMapController.activatePickerMode();
+                        Get.toNamed(Routes.mainMap);
                       },
                       icon: Icon(Icons.add),
                       label: "Ajouter une zone d'activité",
@@ -74,7 +103,7 @@ class _ActivityZoneListScreenState extends State<ActivityZoneListScreen> {
                         trailing: PopupMenuButton<String>(
                           color: Colors.white,
                           onSelected: (String value) {
-                            // Handle menu selection
+                            _handleMenuSelection(value, index);
                           },
                           itemBuilder: (BuildContext context) {
                             return {'Modifier', 'Supprimer'}

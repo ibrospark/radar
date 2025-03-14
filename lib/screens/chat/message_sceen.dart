@@ -8,7 +8,7 @@ import 'package:radar/utils/constants.dart';
 final TextEditingController messageControllerText = TextEditingController();
 
 class MessageScreen extends StatelessWidget {
-  MessageScreen();
+  const MessageScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

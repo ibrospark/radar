@@ -7,6 +7,8 @@ import 'package:radar/screens/chat/user_list_screen.dart';
 import 'package:radar/utils/constants.dart';
 
 class ChatListScreen extends StatelessWidget {
+  const ChatListScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

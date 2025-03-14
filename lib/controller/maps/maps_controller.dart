@@ -7,6 +7,7 @@ import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:radar/_builds/build_continued_research.dart';
 import 'package:radar/_builds/build_house.dart';
 import 'package:radar/models/houses_model.dart';
 import 'package:radar/utils/constants.dart';
@@ -120,27 +121,42 @@ class MapController extends GetxController {
     ));
   }
 
+  Future<void> addFirebaseCircularMarker() async {
+    try {
+      List<House> houses = await _fetchHousesFromFirebase();
+
+      await _updateMarkers(houses); // Déplacer la logique de mise à jour ici.
+      _showResultsSnackbar(houses);
+      _adjustCameraToMarkers();
+    } catch (e) {
+      _showErrorSnackbar(e);
+    } finally {
+      update();
+    }
+  }
+
   Future<void> addFilteredFirebaseCircularMarker() async {
     try {
       List<House> houses = await _fetchHousesFromFirebase();
       List<House> filteredHouses = _applyFilters(houses);
+
       await _updateMarkers(
           filteredHouses); // Déplacer la logique de mise à jour ici.
       _showResultsSnackbar(filteredHouses);
       _adjustCameraToMarkers();
     } catch (e) {
       _showErrorSnackbar(e);
+    } finally {
+      update();
     }
   }
 
   Future<List<House>> _fetchHousesFromFirebase() async {
-    CollectionReference<Map<String, dynamic>> collectionHouses =
-        FirebaseFirestore.instance.collection('houses');
-
     // Limitez les résultats pour ne pas charger trop de données
-    QuerySnapshot<Map<String, dynamic>> snapshots = await collectionHouses
-        .limit(50) // Limitez à 50 maisons par requête
-        .get();
+    QuerySnapshot<Map<String, dynamic>> snapshots =
+        await rxHouseController.housesCollectionFirestore
+            .limit(50) // Limitez à 50 maisons par requête
+            .get();
     return snapshots.docs
         .map((doc) => House.fromMap(doc.data(), doc.id))
         .toList();
@@ -229,6 +245,7 @@ class MapController extends GetxController {
         ),
       );
     }
+    update();
   }
 
   void _adjustCameraToMarkers() {
@@ -274,6 +291,9 @@ class MapController extends GetxController {
         "Aucun bien trouvé !",
         backgroundColor: Colors.redAccent,
       );
+      buildSearchContinueDialog(() {
+        Get.back();
+      }, () {});
     }
   }
 
@@ -373,8 +393,10 @@ class MapController extends GetxController {
     displayFilterPanel.value = true; //Filter panel
     displayDrawerBtn.value = true; //Drawer button
     displayPublishBtn.value = true; //Publish button
-    rxHouseController.startHousesStream(); //  Start listening to houses stream
+    addFirebaseCircularMarker(); //  Start listening to houses stream
+    rxMapController.markers.refresh();
     clearPolylines(); //Clear polylines
+    update();
   }
 
   void activatePickerMode() {
@@ -391,13 +413,10 @@ class MapController extends GetxController {
     rxHouseController.stopHousesStream();
     clearMarkersExcept(['current_position']);
     clearPolylines();
+    update();
   }
 
   Future<void> activateRouteMode() async {
-    clearPolylines();
-    clearMarkersExcept(
-        ['current_position', rxHouseController.currentHouse.value.id!]);
-
     isPickerMode.value = false; //Picker mode
     isRouteMode.value = true; //Route mode
     displayCurrentPositionBtnCircular.value = false; //Current position button
@@ -408,6 +427,13 @@ class MapController extends GetxController {
     displayFilterPanel.value = false; //Filter panel
     displayDrawerBtn.value = false; //Drawer button
     displayPublishBtn.value = false; //Publish button
+
+    rxHouseController.stopHousesStream();
+    clearPolylines(); // Supprimer tous les polylines
+    // Supprimer tous les marqueurs sauf le marqueur de position actuelle et le marqueur de sélection de lieu.
+    clearMarkersExcept(
+        ['current_position', rxHouseController.currentHouse.value.id!]);
+    rxMapController.markers.refresh();
 
     final currentHouseCoords = rxHouseController.currentHouse.value.coords!;
 
@@ -425,6 +451,7 @@ class MapController extends GetxController {
         currentUserLatLng.value.longitude,
         currentHouseCoords.latitude,
         currentHouseCoords.longitude);
+    update();
     Get.back();
   }
 
@@ -467,7 +494,11 @@ class MapController extends GetxController {
   void calculateDistanceBetweenPoints(
       double lat1, double lon1, double lat2, double lon2) {
     double distance = Geolocator.distanceBetween(lat1, lon1, lat2, lon2);
-    distanceInMeters.value = distance;
+    if (distance < 1000) {
+      distanceInMeters.value = distance;
+    } else {
+      distanceInMeters.value = distance / 1000; // Convert to kilometers
+    }
   }
 
   // OK --------------------------------------------------------

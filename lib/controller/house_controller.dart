@@ -6,8 +6,8 @@ import 'package:radar/models/houses_model.dart';
 import '../utils/constants.dart';
 
 class HouseController extends GetxController {
-  final DocumentReference<Map<String, dynamic>> housesCollectionFirestore =
-      FirebaseFirestore.instance.collection('houses').doc();
+  final CollectionReference<Map<String, dynamic>> housesCollectionFirestore =
+      FirebaseFirestore.instance.collection('houses');
 
   RxList<House> houses = <House>[].obs;
   Rx<House> currentHouse = House().obs;
@@ -37,14 +37,6 @@ class HouseController extends GetxController {
   final numberOfBathroomsController = TextEditingController().obs;
   final numberOfFloorsController = TextEditingController().obs;
 
-  StreamSubscription<QuerySnapshot>? housesSubscription;
-
-  @override
-  void onInit() {
-    super.onInit();
-    startHousesStream();
-  }
-
   @override
   void onReady() {
     super.onReady();
@@ -56,27 +48,6 @@ class HouseController extends GetxController {
     stopHousesStream();
     _disposeControllers();
     super.onClose();
-  }
-
-  // Bind Firestore stream to the houses list
-  void startHousesStream() {
-    housesSubscription =
-        FirebaseFirestore.instance.collection('houses').snapshots().listen(
-      (querySnapshot) {
-        houses.value = querySnapshot.docs
-            .map((doc) => House.fromMap(doc.data(), doc.id))
-            .toList();
-      },
-      onError: (e) {
-        print("Erreur lors de la récupération des maisons : $e");
-      },
-    );
-  }
-
-  // Arrêter le stream correctement
-  void stopHousesStream() {
-    housesSubscription?.cancel();
-    housesSubscription = null;
   }
 
   // Initialize controllers
@@ -183,13 +154,12 @@ class HouseController extends GetxController {
 
   // Add house
   Future<void> addHouse() async {
-    await _saveHouse(housesCollectionFirestore);
+    await _saveHouse(housesCollectionFirestore.doc());
   }
 
   // Update house
   Future<void> updateHouse(String houseId) async {
-    final houseRef =
-        FirebaseFirestore.instance.collection('houses').doc(houseId);
+    final houseRef = housesCollectionFirestore.doc(houseId);
     await _saveHouse(houseRef);
   }
 
@@ -248,5 +218,39 @@ class HouseController extends GetxController {
     } catch (e) {
       print("Erreur lors de la suppression de la maison: $e");
     }
+  }
+
+  @override
+  void onInit() {
+    super.onInit();
+    bindHousesStream();
+  }
+
+  // Bind Firestore stream to the houses list
+  void bindHousesStream() {
+    if (housesSubscription != null) {
+      return; // If already subscribed, do nothing
+    }
+    housesSubscription = housesCollectionFirestore.snapshots().listen(
+      (querySnapshot) {
+        houses.value = querySnapshot.docs
+            .map((doc) => House.fromMap(doc.data(), doc.id))
+            .toList();
+      },
+      onError: (e) {
+        print("Erreur lors de la récupération des maisons : $e");
+      },
+      onDone: () {
+        update();
+      },
+    );
+  }
+
+  StreamSubscription<QuerySnapshot>? housesSubscription;
+
+  // Stop the houses stream
+  void stopHousesStream() {
+    housesSubscription?.cancel();
+    housesSubscription = null;
   }
 }
