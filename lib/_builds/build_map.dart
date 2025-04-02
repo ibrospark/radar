@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
@@ -7,6 +8,7 @@ import 'package:radar/_builds/build_draggable_scrollable_sheet.dart';
 import 'package:radar/_builds/build_form.dart';
 import 'package:radar/_builds/build_house.dart';
 import 'package:radar/controller/maps/maps_controller.dart';
+import 'package:radar/models/activity_zone_model.dart';
 import 'package:radar/utils/constants.dart';
 import 'package:radar/utils/routes.dart';
 
@@ -26,8 +28,10 @@ Widget buildGoogleMap(
             return const Center(child: CircularProgressIndicator());
           }
           if (rxMapController.isMapCreated.value) {
-            if (!rxMapController.isPickerMode.value) {
-              rxMapController.addFilteredFirebaseCircularMarker();
+            if (!rxMapController.isPickerHouseMode.value &&
+                !rxMapController.isPickerActivityZone.value) {
+              // On ajoute les marqueurs de la maison
+              rxMapController.addFirebaseCircularMarker();
             }
           }
 
@@ -60,6 +64,7 @@ Widget buildGoogleMap(
         buildIconMap(),
         buildSearchBarLocation(),
         buildIconPickerHouse(),
+        buildIconPickerActivityZone(),
         buildValidatePositionBtnLg(),
         buildCurrentPositionBtnLg(),
         buildCurrentPositionBtnCircular(),
@@ -84,7 +89,7 @@ buildIconMap() {
 
 buildIconPickerHouse({double? height = 50.0}) {
   return Obx(() {
-    return rxMapController.displayIconPickerHouse.value
+    return rxMapController.isPickerHouseMode.value
         ? Positioned(
             top: Get.size.height * 0.43,
             right: 0,
@@ -92,6 +97,24 @@ buildIconPickerHouse({double? height = 50.0}) {
             child: Center(
               child: Image.asset(
                 'assets/mapicons/house_marker.png',
+                height: height,
+              ),
+            ),
+          )
+        : Container();
+  });
+}
+
+buildIconPickerActivityZone({double? height = 50.0}) {
+  return Obx(() {
+    return rxMapController.isPickerActivityZone.value
+        ? Positioned(
+            top: Get.size.height * 0.43,
+            right: 0,
+            left: 0,
+            child: Center(
+              child: Image.asset(
+                'assets/mapicons/pin.png',
                 height: height,
               ),
             ),
@@ -163,21 +186,45 @@ buildValidatePositionBtnLg() {
                   ),
                   backgroundColor: primaryColor,
                   onPressed: () async {
-                    // Latitude de  la maison
-                    rxMapController.currentHouseLatLng.value = LatLng(
-                        rxMapController.cameraPosition.value.target.latitude,
-                        rxMapController.cameraPosition.value.target.longitude);
-                    // LatLng de  la maison
-                    rxMapController.currentHouseLatLng.value =
-                        rxMapController.cameraPosition.value.target;
-                    // Assigner la nom de la place à la SearchPlaceController------------------
-                    await rxSearchPlaceController.getPlaceNameFromLatLng(
-                        rxMapController.cameraPosition.value.target.latitude,
-                        rxMapController.cameraPosition.value.target.longitude);
-                    // Désactiver le mode picker House de  la maison
-                    rxMapController.activateDefaultMode();
+                    // HOUSE PICKER MODE -------------------------------------------------
+                    if (rxMapController.isRouteMode.value) {
+                      // LAT LNG de la maison
+                      rxMapController.currentHouseLatLng.value = LatLng(
+                          rxMapController.cameraPosition.value.target.latitude,
+                          rxMapController
+                              .cameraPosition.value.target.longitude);
+                      // LatLng de la maison
+                      rxMapController.currentHouseLatLng.value =
+                          rxMapController.cameraPosition.value.target;
+                      // Assigner le nom de la place à la SearchPlaceController
+                      await rxSearchPlaceController.getPlaceNameFromLatLng(
+                          rxMapController.cameraPosition.value.target.latitude,
+                          rxMapController
+                              .cameraPosition.value.target.longitude);
+                      // Désactiver le mode picker House de la maison
+                      await rxMapController.activateDefaultMode();
+                    }
+                    // ACTIVITY ZONE MODE PICKER -------------------------------------------------
+                    else if (rxMapController.isPickerActivityZone.value) {
+                      // Si le mode picker est activé, on ajoute la zone d'activité
+                      await rxSearchPlaceController.getPlaceNameFromLatLng(
+                          rxMapController.cameraPosition.value.target.latitude,
+                          rxMapController
+                              .cameraPosition.value.target.longitude);
 
-                    // Retourner à l'écran ajout de  la maison
+                      await rxActivityZoneController
+                          .addActivityZone(ActivityZone(
+                        name: rxSearchPlaceController.placeName.value,
+                        coords: GeoPoint(
+                            rxMapController
+                                .cameraPosition.value.target.latitude,
+                            rxMapController
+                                .cameraPosition.value.target.longitude),
+                        idUser: user!.uid,
+                      ));
+                      // On désactive le mode picker
+                      await rxMapController.activateDefaultMode();
+                    }
                     Get.back();
                   },
                 ),
@@ -245,7 +292,7 @@ Widget buildFilterHousePanel(draggableScrollableController) {
                               text: "Je".toUpperCase(),
                               style: buildTextStyle(
                                 color: Colors.white,
-                                fontSize: 20,
+                                fontSize: 25,
                                 fontWeight: FontWeight.w800,
                                 fontStyle: FontStyle.italic,
                               ),
@@ -254,7 +301,7 @@ Widget buildFilterHousePanel(draggableScrollableController) {
                               text: " R".toUpperCase(),
                               style: buildTextStyle(
                                 color: primaryColor,
-                                fontSize: 20,
+                                fontSize: 25,
                                 fontWeight: FontWeight.w800,
                                 fontStyle: FontStyle.italic,
                               ),
@@ -263,8 +310,8 @@ Widget buildFilterHousePanel(draggableScrollableController) {
                               text: "echerche Ici".toUpperCase(),
                               style: buildTextStyle(
                                 color: Colors.white,
-                                fontSize: 20,
-                                fontWeight: FontWeight.w700,
+                                fontSize: 25,
+                                fontWeight: FontWeight.w800,
                                 fontStyle: FontStyle.italic,
                               ),
                             ),
@@ -277,15 +324,27 @@ Widget buildFilterHousePanel(draggableScrollableController) {
                   buildTransactionType(),
                   const SizedBox(height: 10),
                   buildCategorie(),
-                  buildMinPrice(),
-                  buildMaxPrice(),
+                  Row(
+                    children: [
+                      Expanded(child: buildMinPrice()),
+                      const SizedBox(width: 10),
+                      Expanded(child: buildMaxPrice()),
+                    ],
+                  ),
                   buildArea(),
-                  buildNumberOfFloors(),
-                  buildNumberOfBedrooms(),
-                  buildNumberOfLivingRooms(),
-                  buildNumberOfBathrooms(),
+                  Wrap(
+                    spacing: 10.0,
+                    runSpacing: 10.0,
+                    children: [
+                      buildNumberOfFloors(),
+                      buildNumberOfBedrooms(),
+                      buildNumberOfLivingRooms(),
+                      buildNumberOfBathrooms(),
+                    ],
+                  ),
                   buildOptionsSelection(),
                   buildFilterButton(),
+                  buildResetFilterButton(),
                 ],
               ),
             ),

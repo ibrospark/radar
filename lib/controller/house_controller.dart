@@ -15,6 +15,7 @@ class HouseController extends GetxController {
   // Observables
   RxBool isUpdateHouse = false.obs;
   RxString currentHouseId = ''.obs;
+  RxBool isCurrentUserHouses = false.obs;
   RxString selectedRentalDuration = ''.obs;
   RxString selectedTransactionType = transactionsTypeList.first.obs;
   RxString selectedCurrency = 'Xof'.obs;
@@ -99,6 +100,8 @@ class HouseController extends GetxController {
       rentalDurationController,
       transactionTypeController,
       priceController,
+      minPriceController,
+      maxPriceController,
       areaController,
       numberOfBedroomsController,
       numberOfRoomsController,

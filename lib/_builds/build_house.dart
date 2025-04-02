@@ -8,6 +8,7 @@ import 'package:radar/_builds/build_all_elements.dart';
 import 'package:radar/_builds/build_carousel_images.dart';
 import 'package:radar/_builds/build_form.dart';
 import 'package:radar/utils/constants.dart';
+import 'package:radar/utils/routes.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 Widget buildDescription() {
@@ -593,7 +594,11 @@ Widget buildActionButtons() {
           // enlever le nombre de publication
           await rxOfferSubscriptionController.decreasePublicationCount(0, 1);
           // Form is valid
-          Get.snackbar("Succès", "Formulaire validé");
+          await rxMapController.activateDefaultMode();
+          rxHouseController.resetAllControllers();
+          Get.offAllNamed(
+            Routes.home,
+          );
           buildSnackbar(
               title: "Succès",
               message: "Maison ajoutée avec succees !",
@@ -612,7 +617,24 @@ Widget buildFilterButton() {
     backgroundColor: primaryColor,
     fixedSize: Size(Get.size.width, 40),
     onPressed: () {
-      rxMapController.addFilteredFirebaseCircularMarker();
+      rxMapController.addFirebaseCircularMarker(applyFilters: true);
+    },
+  );
+}
+
+Widget buildResetFilterButton() {
+  return buildElevatedButtonIcon(
+    label: 'Réinitialiser le radar',
+    icon: const Icon(
+      Icons.refresh,
+      color: Colors.white,
+    ),
+    backgroundColor: Colors.red,
+    fixedSize: Size(Get.size.width, 40),
+    color: white,
+    onPressed: () {
+      rxHouseController.resetAllControllers();
+      rxMapController.addFirebaseCircularMarker();
     },
   );
 }
@@ -695,12 +717,47 @@ Widget buildLocationInfo() {
     () => Row(
       children: [
         const Icon(Icons.location_on),
-        buildText(
-            text: rxHouseController.currentHouse.value.address ??
-                "Adresse non spécifiée"),
+        Expanded(
+          child: buildText(
+              text: rxHouseController.currentHouse.value.address ??
+                  "Adresse non spécifiée",
+              overflow: TextOverflow.visible),
+        )
       ],
     ),
   );
+}
+
+Widget buildOptions() {
+  return Obx(() {
+    if (rxHouseController.currentHouse.value.options != null &&
+        rxHouseController.currentHouse.value.options!.isNotEmpty) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          buildText(
+            text: "Options",
+            fontSize: 16,
+            fontWeight: FontWeight.w800,
+          ),
+          buildSpacer(),
+          Wrap(
+            spacing: 8.0,
+            runSpacing: 4.0,
+            children: rxHouseController.currentHouse.value.options!
+                .where((option) => option.isNotEmpty)
+                .map((option) => Chip(
+                      label: Text(option),
+                      backgroundColor: Colors.grey[200],
+                    ))
+                .toList(),
+          ),
+        ],
+      );
+    } else {
+      return Container();
+    }
+  });
 }
 
 Widget buildRatingBar() {
@@ -849,6 +906,8 @@ Widget buildShowHousePanel() {
         buildRatingBar(),
         buildSpacer(),
         buildRoomsInfo(),
+        buildSpacer(),
+        buildOptions(),
         buildSpacer(),
         buildItineraryButton(),
         buildContactButton(),

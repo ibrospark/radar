@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:radar/_builds/build_all_elements.dart';
 import 'package:radar/_builds/build_drawer.dart';
 import 'package:radar/_builds/build_map.dart';
 import 'package:radar/utils/constants.dart';
@@ -21,9 +22,9 @@ class _MainMapsScreenState extends State<MainMapsScreen> {
     // Initialiser le contrôleur ici
     draggableScrollableController = DraggableScrollableController();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      rxHouseController.resetAllControllers();
-    });
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   rxHouseController.resetAllControllers();
+    // });
   }
 
   @override
@@ -35,11 +36,19 @@ class _MainMapsScreenState extends State<MainMapsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: scaffoldKey,
-      drawer: buildDrawer(),
-      body: buildGoogleMap(scaffoldKey,
-          draggableScrollableController: draggableScrollableController),
+    return WillPopScope(
+      onWillPop: () async {
+        // Appel de la fonction de confirmation
+        bool exitApp = await buildConfirmDialog(context);
+        // Retourne true si l'utilisateur veut quitter, sinon false
+        return exitApp;
+      },
+      child: Scaffold(
+        key: scaffoldKey,
+        drawer: buildDrawer(),
+        body: buildGoogleMap(scaffoldKey,
+            draggableScrollableController: draggableScrollableController),
+      ),
     );
   }
 }

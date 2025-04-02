@@ -72,11 +72,11 @@ class UserModel {
       gender: data['Sexe'],
       address: data['Adresse'],
       phoneNumber: data['Tel'],
-      accountType: data['Type de compte'] ?? 'Starter',
+      accountType: data['Type de compte'],
       registrationDate: registrationDate,
       fcmToken: data['fcmToken'],
-      status: data['Statut'] ?? 0,
-      profileComplete: data['profileComplete'] ?? false,
+      status: data['Statut'],
+      profileComplete: data['profileComplete'],
     );
   }
 }

@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:radar/controller/activity_zone_controller.dart';
 import 'package:radar/controller/user/auth_controller.dart';
 import 'package:radar/controller/chat/chat_controller.dart';
 import 'package:radar/controller/draggable_scrollable_sheet_controller.dart';
@@ -73,6 +74,7 @@ DraggableScrollableSheetController rxDraggableScrollableSheetController =
 OfferController rxOfferController = Get.find();
 OfferSubscriptionController rxOfferSubscriptionController = Get.find();
 NotificationController rxNotificationController = Get.find();
+ActivityZoneController rxActivityZoneController = Get.find();
 
 // -----------------------------------------------
 String googleMapApiKey = 'AIzaSyAONca6NEPKGnm_GSXAr3wDfKsnfbevES4';

@@ -21,17 +21,17 @@ class _AddHouseScreenState extends State<AddHouseScreen> {
   @override
   void initState() {
     rxOfferSubscriptionController.loadUserSubscriptions();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      rxHouseController.resetAllControllers();
-    });
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   rxHouseController.resetAllControllers();
+    // });
     super.initState();
   }
 
   @override
   void dispose() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      rxHouseController.resetAllControllers();
-    });
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   rxHouseController.resetAllControllers();
+    // });
     super.dispose();
   }
 
@@ -114,7 +114,7 @@ class _AddHouseScreenState extends State<AddHouseScreen> {
                                   color: white,
                                 ),
                                 onPressed: () {
-                                  rxMapController.activatePickerMode();
+                                  rxMapController.activatePickerHouseMode();
                                   Get.toNamed(Routes.mainMap);
                                 },
                               ),

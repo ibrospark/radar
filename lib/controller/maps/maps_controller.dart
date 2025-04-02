@@ -45,12 +45,12 @@ class MapController extends GetxController {
   // UI State management
   RxBool isMapCreated = false.obs;
   RxBool isMapReady = false.obs;
-  RxBool isPickerMode = false.obs;
+  RxBool isPickerHouseMode = false.obs;
+  RxBool isPickerActivityZone = false.obs;
   RxBool isRouteMode = false.obs;
   RxBool displayCurrentPositionBtnCircular = true.obs;
   RxBool displayCurrentPositionBtnLg = false.obs;
   RxBool displaySearchLocationBar = true.obs;
-  RxBool displayIconPickerHouse = false.obs;
   RxBool displayValidatePositionBtnLg = false.obs;
   RxBool displayFilterPanel = true.obs;
   RxBool displayDrawerBtn = true.obs;
@@ -72,7 +72,7 @@ class MapController extends GetxController {
         currentUserLatLng.value, 'current_position', 'currentPosition');
   }
 
-// Determiner la position actuelle de l'utilisateur
+// Determiner la position actuelle de l'utilisateur ---------------------------------------------------------
   Future<Position> determineCurrentPosition() async {
     if (!await Geolocator.isLocationServiceEnabled()) {
       return Future.error("Location services disabled.");
@@ -92,6 +92,7 @@ class MapController extends GetxController {
         desiredAccuracy: LocationAccuracy.best);
   }
 
+// Déplacer la camera ---------------------------------------------------------
   void moveCamera(double latitude, double longitude) {
     googleMapController.value?.animateCamera(
       CameraUpdate.newCameraPosition(
@@ -103,13 +104,13 @@ class MapController extends GetxController {
     );
   }
 
-// Quand la caméra est immobile
+// Quand la caméra est immobile ---------------------------------------------------------
   void onCameraIdle() {
     final latLng = cameraPosition.value.target;
     currentCameraIdleLatLng.value = latLng;
   }
 
-  //  Ajouter un marqueur sur la carte
+  //  Ajouter un marqueur sur la carte ---------------------------------------------------------
   Future<void> addMarker(LatLng position, String idMarker, String type) async {
     final iconPath = markerIcons[type] ?? markerIcons['other']!;
     final markerIcon = await getBytesFromAsset(iconPath, 100);
@@ -121,28 +122,17 @@ class MapController extends GetxController {
     ));
   }
 
-  Future<void> addFirebaseCircularMarker() async {
+// Ajout de markers circulaires ---------------------------------------------------------
+
+  Future<void> addFirebaseCircularMarker({bool applyFilters = false}) async {
     try {
       List<House> houses = await _fetchHousesFromFirebase();
+      if (applyFilters) {
+        houses = _applyFilters(houses);
+      }
 
-      await _updateMarkers(houses); // Déplacer la logique de mise à jour ici.
+      await _updateCircularMarkers(houses);
       _showResultsSnackbar(houses);
-      _adjustCameraToMarkers();
-    } catch (e) {
-      _showErrorSnackbar(e);
-    } finally {
-      update();
-    }
-  }
-
-  Future<void> addFilteredFirebaseCircularMarker() async {
-    try {
-      List<House> houses = await _fetchHousesFromFirebase();
-      List<House> filteredHouses = _applyFilters(houses);
-
-      await _updateMarkers(
-          filteredHouses); // Déplacer la logique de mise à jour ici.
-      _showResultsSnackbar(filteredHouses);
       _adjustCameraToMarkers();
     } catch (e) {
       _showErrorSnackbar(e);
@@ -210,6 +200,10 @@ class MapController extends GetxController {
         matches &= rxHouseController.selectedOptions
             .every((option) => house.options?.contains(option) ?? false);
       }
+      if (rxHouseController.isCurrentUserHouses.value) {
+        matches &=
+            house.idUser == rxUserController.currentUser.value!.id.toString();
+      }
       int minPrix =
           int.tryParse(rxHouseController.minPriceController.value.text) ?? 0;
       int? maxPrix =
@@ -222,7 +216,7 @@ class MapController extends GetxController {
     }).toList();
   }
 
-  Future<void> _updateMarkers(List<House> houses) async {
+  Future<void> _updateCircularMarkers(List<House> houses) async {
     clearMarkersExcept(['current_position']);
     for (var houseData in houses) {
       markers.add(
@@ -291,9 +285,7 @@ class MapController extends GetxController {
         "Aucun bien trouvé !",
         backgroundColor: Colors.redAccent,
       );
-      buildSearchContinueDialog(() {
-        Get.back();
-      }, () {});
+      buildSearchContinueDialog();
     }
   }
 
@@ -306,6 +298,7 @@ class MapController extends GetxController {
     print(error.toString());
   }
 
+// Clears functions --------------------------------------------------------
   void clearMarkers() {
     markers.clear();
   }
@@ -324,7 +317,7 @@ class MapController extends GetxController {
     polylineCoordinates.clear();
   }
 
-  // Map Creation and Interaction ------------------------------------------------------
+  // Lors de la création de la carte ------------------------------------------------------
   void onMapCreated(GoogleMapController controller) async {
     googleMapController.value = controller;
 
@@ -344,7 +337,7 @@ class MapController extends GetxController {
     );
   }
 
-  // Cette fonction gère la sélection d'un lieu à partir de la recherche.
+  // Cette fonction gère la sélection d'un lieu à partir de la recherche de lieu. ---------------------------------------------------------
   void handlePlaceSelection(
     String placeId, // Identifiant du lieu sélectionné.
     Map<String, dynamic>
@@ -382,13 +375,14 @@ class MapController extends GetxController {
     }
   }
 
+// Activer le mode par defaut ---------------------------------------------------------
   Future<void> activateDefaultMode() async {
-    isPickerMode.value = false; //Picker mode
+    isPickerActivityZone.value = false; //Picker mode
+    isPickerHouseMode.value = false; //Picker mode
     isRouteMode.value = false; //Route mode
     displayCurrentPositionBtnCircular.value = true; //Current position button
     displayCurrentPositionBtnLg.value = false; //Current position button
     displaySearchLocationBar.value = true; //Search location bar
-    displayIconPickerHouse.value = false; //Icon picker house
     displayValidatePositionBtnLg.value = false; //Validate position button
     displayFilterPanel.value = true; //Filter panel
     displayDrawerBtn.value = true; //Drawer button
@@ -399,30 +393,78 @@ class MapController extends GetxController {
     update();
   }
 
-  void activatePickerMode() {
-    isPickerMode.value = true; //Picker mode
+// Activer le mode prendre la maison ---------------------------------------------------------
+  void activatePickerHouseMode() {
+    isPickerActivityZone.value = false; //Picker mode
+    isPickerHouseMode.value = true; //Picker mode
     isRouteMode.value = false; //Route mode
     displayCurrentPositionBtnCircular.value = false; //Current position button
     displayCurrentPositionBtnLg.value = true; //Current position button
     displaySearchLocationBar.value = true; //Search location bar
-    displayIconPickerHouse.value = true; //Icon picker house
     displayValidatePositionBtnLg.value = true; //Validate position button
     displayFilterPanel.value = false; //Filter panel
     displayDrawerBtn.value = false; //Drawer button
     displayPublishBtn.value = false; //Publish button
+
+    rxHouseController.isCurrentUserHouses.value = false;
     rxHouseController.stopHousesStream();
+
     clearMarkersExcept(['current_position']);
     clearPolylines();
     update();
   }
 
-  Future<void> activateRouteMode() async {
-    isPickerMode.value = false; //Picker mode
-    isRouteMode.value = true; //Route mode
+// Activer le mode prendre la zone d'activité ---------------------------------------------------------
+  void activatePickerActivityZone() {
+    isPickerActivityZone.value = true; //Picker mode
+    isPickerHouseMode.value = false; //Picker mode
+    isRouteMode.value = false; //Route mode
     displayCurrentPositionBtnCircular.value = false; //Current position button
+    displayCurrentPositionBtnLg.value = true; //Current position button
+    displaySearchLocationBar.value = true; //Search location bar
+    displayValidatePositionBtnLg.value = true; //Validate position button
+    displayFilterPanel.value = false; //Filter panel
+    displayDrawerBtn.value = false; //Drawer button
+    displayPublishBtn.value = false; //Publish button
+
+    rxHouseController.stopHousesStream();
+
+    clearMarkersExcept(['current_position']);
+    clearPolylines();
+    update();
+  }
+
+// Activer le mode prendre la zone d'activité ---------------------------------------------------------
+  void activatePropertyManagement() {
+    isPickerActivityZone.value = false; //Picker mode
+    isPickerHouseMode.value = false; //Picker mode
+    isRouteMode.value = false; //Route mode
+    displayCurrentPositionBtnCircular.value = true; //Current position button
     displayCurrentPositionBtnLg.value = false; //Current position button
-    displaySearchLocationBar.value = false; //Search location bar
-    displayIconPickerHouse.value = false; //Icon picker house
+    displaySearchLocationBar.value = true; //Search location bar
+    displayValidatePositionBtnLg.value = false; //Validate position button
+    displayFilterPanel.value = true; //Filter panel
+    displayDrawerBtn.value = true; //Drawer button
+    displayPublishBtn.value = true; //Publish button
+
+    rxHouseController.resetAllControllers();
+    rxHouseController.isCurrentUserHouses.value = true;
+    addFirebaseCircularMarker(
+        applyFilters: true); //  Start listening to houses stream
+
+    rxMapController.markers.refresh();
+    clearPolylines(); //Clear polylines
+    update();
+  }
+
+// Activer le mode route ---------------------------------------------------------
+  Future<void> activateRouteMode() async {
+    isPickerActivityZone.value = false; //Picker mode
+    isPickerHouseMode.value = false; //Picker mode
+    isRouteMode.value = true; //Route mode
+    displayCurrentPositionBtnCircular.value = true; //Current position button
+    displayCurrentPositionBtnLg.value = false; //Current position button
+    displaySearchLocationBar.value = true; //Search location bar
     displayValidatePositionBtnLg.value = false; //Validate position button
     displayFilterPanel.value = false; //Filter panel
     displayDrawerBtn.value = false; //Drawer button
@@ -451,11 +493,12 @@ class MapController extends GetxController {
         currentUserLatLng.value.longitude,
         currentHouseCoords.latitude,
         currentHouseCoords.longitude);
+
     update();
     Get.back();
   }
 
-// OK --------------------------------------------------------
+// Dessiner itineraire ROUTE --------------------------------------------------------
 
   Future<void> drawRoute(double originLat, double originLng,
       double destinationLat, double destinationLng) async {
@@ -490,7 +533,7 @@ class MapController extends GetxController {
     }
   }
 
-// OK --------------------------------------------------------
+// Calculer la distance entre deux markers --------------------------------------------------------
   void calculateDistanceBetweenPoints(
       double lat1, double lon1, double lat2, double lon2) {
     double distance = Geolocator.distanceBetween(lat1, lon1, lat2, lon2);
@@ -501,7 +544,7 @@ class MapController extends GetxController {
     }
   }
 
-  // OK --------------------------------------------------------
+  // Ouvrir GOOGLE MAP  avec litineraire entre deux positions --------------------------------------------------------
   Future<void> openMap(double originLat, double originLong,
       double destinationLat, double destinationLong) async {
     if (GetPlatform.isAndroid) {

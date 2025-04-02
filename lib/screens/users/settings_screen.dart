@@ -38,19 +38,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     Get.toNamed(Routes.userSettings);
                   },
                 ),
-                buildListTile(
-                  title: buildText(
-                    text: "Zones d'activités",
-                    fontSize: 14,
-                    color: white,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  trailing: Icon(
-                    Icons.arrow_forward,
-                    size: 20,
-                    color: white,
-                  ),
-                ),
                 Padding(
                   padding: const EdgeInsets.all(10),
                   child: buildElevatedButtonIcon(

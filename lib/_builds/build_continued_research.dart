@@ -3,10 +3,7 @@ import 'package:get/get.dart';
 import 'package:radar/_builds/build_all_elements.dart';
 import 'package:radar/utils/constants.dart';
 
-Future<void> buildSearchContinueDialog(
-  VoidCallback onCancel,
-  VoidCallback onConfirm,
-) async {
+Future<void> buildSearchContinueDialog() async {
   await showDialog(
     context: Get.context!,
     builder: (BuildContext context) {
@@ -67,7 +64,9 @@ Future<void> buildSearchContinueDialog(
                             borderRadius: BorderRadius.circular(0),
                           ),
                         ),
-                        onPressed: onCancel,
+                        onPressed: () {
+                          Get.back();
+                        },
                       ),
                     ),
                     const SizedBox(width: 5),
@@ -82,7 +81,7 @@ Future<void> buildSearchContinueDialog(
                             borderRadius: BorderRadius.circular(0),
                           ),
                         ),
-                        onPressed: onConfirm,
+                        onPressed: null,
                       ),
                     ),
                   ],

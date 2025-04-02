@@ -10,8 +10,8 @@ Drawer buildDrawer() {
     // Ajoutez ici le contenu de votre drawer
     child: Container(
       decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(0),
         gradient: gradient,
-        borderRadius: BorderRadius.circular(0.0),
       ),
       child: ListView(
         padding: EdgeInsets.zero,
@@ -19,7 +19,7 @@ Drawer buildDrawer() {
           SizedBox(
             height: Get.size.height * 0.4,
             child: DrawerHeader(
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: primaryColor,
               ),
               child: Column(
@@ -106,6 +106,10 @@ Drawer buildDrawer() {
               color: white,
               fontWeight: FontWeight.w600,
             ),
+            onTap: () {
+              Get.back();
+              rxMapController.activatePropertyManagement();
+            },
           ),
           divider,
           ListTile(
@@ -209,7 +213,7 @@ Drawer buildDrawer() {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: SvgPicture.asset(
-                'assets/svg/maps_marker.svg',
+                'assets/svg/target.svg',
                 width: 20,
                 color: primaryColor,
               ),

@@ -10,8 +10,8 @@ buildTextFormField({
   validator,
   TextEditingController? controller,
   bool obscureText = false,
-  int? maxLines,
-  int? minLines,
+  int? maxLines = 1,
+  int? minLines = 1,
   String? initialValue,
   TextInputAction? textInputAction = TextInputAction.next,
   TextInputType? keyboardType = TextInputType.text,
@@ -31,7 +31,6 @@ buildTextFormField({
               ),
               child: buildText(
                 text: labelText,
-                fontSize: 16,
                 fontWeight: FontWeight.w800,
                 textAlign: TextAlign.left,
               ),

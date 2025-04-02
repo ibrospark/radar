@@ -21,14 +21,14 @@ PreferredSizeWidget? buildAppBar({
             text: title!,
             color: thirdColor,
             fontWeight: FontWeight.w600,
-            fontSize: 15,
+            fontSize: 14,
             overflow: TextOverflow.ellipsis,
           ),
         ),
         Expanded(
           child: buildLogo(
             color: thirdColor,
-            height: 100,
+            height: 70.0,
           ),
         ),
       ],
@@ -74,7 +74,7 @@ buildText({
   textWidthBasis,
   textHeightBehavior,
   selectionColor,
-  double? fontSize = 14,
+  double? fontSize = 16,
   fontWeight = FontWeight.w300,
   fontStyle = FontStyle.normal,
   color = Colors.black,
@@ -109,9 +109,10 @@ buildText({
 
 TextStyle? buildTextStyle({
   required Color? color,
-  double? fontSize = 12,
+  double? fontSize = 16,
   FontWeight? fontWeight = FontWeight.normal,
   FontStyle? fontStyle = FontStyle.normal,
+  TextOverflow? overflow = TextOverflow.visible,
 }) {
   return GoogleFonts.sourceSans3(
     textStyle: TextStyle(
@@ -119,6 +120,7 @@ TextStyle? buildTextStyle({
       fontSize: fontSize,
       fontWeight: fontWeight,
       fontStyle: fontStyle,
+      overflow: overflow,
     ),
   );
 }
@@ -436,6 +438,33 @@ buildCongratulationsPopupDialog({String text = ""}) {
           ),
         ),
       ),
+    ),
+  );
+}
+
+Future<bool> buildConfirmDialog(BuildContext context) async {
+  // Utilisation de GetX pour afficher la boîte de dialogue
+  return await Get.dialog(
+    AlertDialog(
+      title: Text("Voulez-vous vraiment quitter ?"),
+      content: Text("Appuyez sur 'Oui' pour quitter, ou 'Non' pour rester."),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Get.back(
+                result:
+                    false); // Retourne 'false' pour rester dans l'application
+          },
+          child: Text("Non"),
+        ),
+        TextButton(
+          onPressed: () {
+            Get.back(
+                result: true); // Retourne 'true' pour quitter l'application
+          },
+          child: Text("Oui"),
+        ),
+      ],
     ),
   );
 }

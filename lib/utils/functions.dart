@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:radar/_builds/build_all_elements.dart';
 import 'package:radar/_builds/build_image_picker.dart';
+import 'package:radar/controller/activity_zone_controller.dart';
 import 'package:radar/controller/user/auth_controller.dart';
 import 'package:radar/controller/chat/chat_controller.dart';
 import 'package:radar/controller/draggable_scrollable_sheet_controller.dart';
@@ -28,14 +29,16 @@ void initializeControllers() {
   Get.put(UserController());
   Get.put(OfferController());
   Get.put(OfferSubscriptionController());
+  Get.put(MapController());
   Get.put(HouseController());
   Get.put(UserController());
   Get.put(ChatController());
   Get.put(ImageController());
-  Get.put(MapController());
+
   Get.put(SearchPlaceController());
   Get.put(DraggableScrollableSheetController());
   Get.put(NotificationController());
+  Get.put(ActivityZoneController());
 }
 
 String screenDeviceType(BuildContext context) {
