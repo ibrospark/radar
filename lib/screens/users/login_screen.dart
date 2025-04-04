@@ -43,7 +43,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     text: "Saisissez votre numéro de téléphone pour continuer.",
                     fontSize: 18,
                     color: primaryColor,
-                    overflow: TextOverflow.visible,
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 40),

@@ -43,6 +43,7 @@ Widget buildGoogleMap(
                   zoom: 14.0,
                 ),
                 zoomGesturesEnabled: true,
+                zoomControlsEnabled: false,
                 mapType: MapType.normal,
                 onTap: (value) {
                   if (rxMapController.displayFilterPanel.value) {
@@ -187,7 +188,7 @@ buildValidatePositionBtnLg() {
                   backgroundColor: primaryColor,
                   onPressed: () async {
                     // HOUSE PICKER MODE -------------------------------------------------
-                    if (rxMapController.isRouteMode.value) {
+                    if (rxMapController.isPickerHouseMode.value) {
                       // LAT LNG de la maison
                       rxMapController.currentHouseLatLng.value = LatLng(
                           rxMapController.cameraPosition.value.target.latitude,
@@ -201,8 +202,6 @@ buildValidatePositionBtnLg() {
                           rxMapController.cameraPosition.value.target.latitude,
                           rxMapController
                               .cameraPosition.value.target.longitude);
-                      // Désactiver le mode picker House de la maison
-                      await rxMapController.activateDefaultMode();
                     }
                     // ACTIVITY ZONE MODE PICKER -------------------------------------------------
                     else if (rxMapController.isPickerActivityZone.value) {
@@ -222,8 +221,8 @@ buildValidatePositionBtnLg() {
                                 .cameraPosition.value.target.longitude),
                         idUser: user!.uid,
                       ));
-                      // On désactive le mode picker
-                      await rxMapController.activateDefaultMode();
+                      // // On désactive le mode picker
+                      // rxMapController.activateDefaultMode();
                     }
                     Get.back();
                   },
@@ -275,7 +274,7 @@ Widget buildFilterHousePanel(draggableScrollableController) {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       const Icon(
@@ -440,22 +439,62 @@ buildDisplayRoute() {
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
+                    color: Colors.black.withOpacity(0.5),
                     blurRadius: 10,
                     spreadRadius: 2,
                   ),
                 ],
               ),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Obx(() => buildText(
-                        text:
-                            "La distance est de : ${rxMapController.distanceInMeters.value.toStringAsFixed(2)} m",
-                        color: white,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 20,
-                      )),
-                  buildSpacer(),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      const Icon(
+                        Icons.directions_walk,
+                        color: Colors.white,
+                        size: 30,
+                      ),
+                      const SizedBox(width: 10),
+                      Obx(
+                        () => Expanded(
+                          child: buildText(
+                            text:
+                                "Distance entre vous et votre destination : ${rxMapController.distanceText} ",
+                            color: white,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            textAlign: TextAlign.start,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  buildSpacer(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      const Icon(
+                        Icons.timer,
+                        color: Colors.white,
+                        size: 30,
+                      ),
+                      const SizedBox(width: 10),
+                      Obx(
+                        () => Expanded(
+                          child: buildText(
+                            text:
+                                "Temps estimé : ${rxMapController.travelTimeText.value}",
+                            color: white,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            textAlign: TextAlign.start,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                   buildElevatedButtonIcon(
                     label: "Suivre l'itinéraire",
                     icon: const Icon(
@@ -483,7 +522,7 @@ buildDisplayRoute() {
                     color: Colors.white,
                     backgroundColor: Colors.red,
                     fixedSize: Size(Get.size.width, 30),
-                    onPressed: () {
+                    onPressed: () async {
                       rxMapController.activateDefaultMode();
                     },
                   )

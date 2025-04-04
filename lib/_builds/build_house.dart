@@ -412,7 +412,7 @@ buildRecapHouseLinesTemplate(String label, String value) {
             text: label,
             fontSize: 15,
             fontWeight: FontWeight.w800,
-            fontStyle: FontStyle.italic,
+            color: white,
           ),
           const SizedBox(
             width: 20,
@@ -422,17 +422,17 @@ buildRecapHouseLinesTemplate(String label, String value) {
                 text: value,
                 fontSize: 15,
                 fontWeight: FontWeight.w500,
-                fontStyle: FontStyle.italic,
+                color: white,
                 maxLines: 5),
           ),
         ],
       ),
-      const Divider(
+      Divider(
         height: 20,
         thickness: 1,
         indent: 0,
         endIndent: 0,
-        color: Colors.grey,
+        color: Colors.black.withOpacity(0.3),
       )
     ],
   );
@@ -467,7 +467,6 @@ Widget buildInfoBlock({
             color: color,
             fontWeight: FontWeight.w600,
             fontSize: 16,
-            overflow: TextOverflow.visible,
             fontStyle: FontStyle.italic,
           ),
         ),
@@ -483,6 +482,9 @@ Future<void> buildRecapHouse() async {
         borderRadius: BorderRadius.circular(10.0),
       ),
       child: Container(
+        decoration: BoxDecoration(
+          gradient: gradient,
+        ),
         constraints: BoxConstraints(
           maxHeight: Get.height - 20,
         ),
@@ -493,30 +495,27 @@ Future<void> buildRecapHouse() async {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 20),
-                Text(
-                  "Récapitulatif :".toUpperCase(),
-                  style: Get.textTheme.titleLarge!.copyWith(fontSize: 20),
-                  textAlign: TextAlign.center,
-                ),
+                buildText(
+                    text: "Récapitulatif :".toUpperCase(),
+                    textAlign: TextAlign.center,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: primaryColor),
                 const SizedBox(height: 20),
                 buildRecapHouseLinesTemplate(
-                  'Description',
-                  rxHouseController.descriptionController.value.text,
-                ),
-                buildRecapHouseLinesTemplate(
-                  'Prix',
-                  '${rxHouseController.priceController.value.text} ${rxHouseController.selectedCurrency.value}',
-                ),
-                buildRecapHouseLinesTemplate(
-                  'Type de transaction',
+                  'Type de transaction :',
                   rxHouseController.selectedTransactionType.value,
                 ),
                 buildRecapHouseLinesTemplate(
-                  'Catégorie',
+                  'Quartier :',
+                  rxMapController.neighborhood.value,
+                ),
+                buildRecapHouseLinesTemplate(
+                  'Catégorie :',
                   rxHouseController.selectedCategory.value,
                 ),
                 buildRecapHouseLinesTemplate(
-                  'Superficie',
+                  'Superficie :',
                   '${rxHouseController.areaController.value.text} m²',
                 ),
                 if ([
@@ -528,7 +527,7 @@ Future<void> buildRecapHouse() async {
                   'Studio',
                 ].contains(rxHouseController.selectedCategory.value))
                   buildRecapHouseLinesTemplate(
-                    'Nombre de chambre(s)',
+                    'Nombre de chambre(s) :',
                     rxHouseController.numberOfBedroomsController.value.text,
                   ),
                 if ([
@@ -539,7 +538,7 @@ Future<void> buildRecapHouse() async {
                   'Studio',
                 ].contains(rxHouseController.selectedCategory.value))
                   buildRecapHouseLinesTemplate(
-                    'Nombre de Salon(s)',
+                    'Nombre de Salon(s) :',
                     rxHouseController.numberOfLivingRoomsController.value.text,
                   ),
                 if ([
@@ -550,15 +549,23 @@ Future<void> buildRecapHouse() async {
                   'Studio',
                 ].contains(rxHouseController.selectedCategory.value))
                   buildRecapHouseLinesTemplate(
-                    'Nombre de salle(s) de bain',
+                    'Nombre de salle(s) de bain  :',
                     rxHouseController.numberOfBathroomsController.value.text,
                   ),
                 if (rxHouseController.selectedCategory.value == 'Immeuble' ||
                     rxHouseController.selectedCategory.value == 'Villa')
                   buildRecapHouseLinesTemplate(
-                    'Nombre d\'étage(s)',
+                    'Nombre d\'étage(s) :',
                     rxHouseController.numberOfFloorsController.value.text,
                   ),
+                buildRecapHouseLinesTemplate(
+                  'Description  :',
+                  rxHouseController.descriptionController.value.text,
+                ),
+                buildRecapHouseLinesTemplate(
+                  'Prix :',
+                  '${rxHouseController.priceController.value.text} ${rxHouseController.selectedCurrency.value}',
+                ),
                 const SizedBox(height: 10),
                 buildActionButtons(),
               ],
@@ -574,36 +581,52 @@ Widget buildActionButtons() {
   // return Obx(() {
   return Column(
     children: [
-      buildElevatedButtonIcon(
-        label: "J'ai fais une erreur",
-        icon: const Icon(Icons.cancel),
-        backgroundColor: Colors.red,
-        onPressed: () {
-          Get.back();
-        },
+      SizedBox(
+        width: double.infinity,
+        child: buildElevatedButtonIcon(
+          label: "J'ai fais une erreur",
+          icon: const Icon(
+            Icons.cancel,
+            color: Colors.white,
+          ),
+          backgroundColor: Colors.red,
+          color: white,
+          onPressed: () {
+            Get.back();
+          },
+        ),
       ),
-      buildElevatedButtonIcon(
-        label: "Je confirme mes informations",
-        icon: const Icon(Icons.check),
-        backgroundColor: Colors.green,
-        onPressed: () async {
-          // Uploader limage
-          await rxImageController.uploadFile();
-          // Ajouter la maison
-          rxHouseController.publishOrUpdateHouse();
-          // enlever le nombre de publication
-          await rxOfferSubscriptionController.decreasePublicationCount(0, 1);
-          // Form is valid
-          await rxMapController.activateDefaultMode();
-          rxHouseController.resetAllControllers();
-          Get.offAllNamed(
-            Routes.home,
-          );
-          buildSnackbar(
-              title: "Succès",
-              message: "Maison ajoutée avec succees !",
-              backgroundColor: Colors.green);
-        },
+      const SizedBox(height: 10),
+      SizedBox(
+        width: double.infinity,
+        child: buildElevatedButtonIcon(
+          label: "Je confirme mes informations",
+          icon: const Icon(
+            Icons.check,
+            color: Colors.white,
+          ),
+          backgroundColor: Colors.green,
+          color: white,
+          onPressed: () async {
+            // Uploader limage
+            await rxImageController.uploadFile();
+            // Ajouter la maison
+            rxHouseController.publishOrUpdateHouse();
+            // enlever le nombre de publication
+            await rxOfferSubscriptionController.decreasePublicationCount(0, 1);
+            // Form is valid
+            rxMapController.activateDefaultMode();
+            rxHouseController.resetAllControllers();
+            rxImageController.clearImageController();
+            Get.offAllNamed(
+              Routes.home,
+            );
+            buildSnackbar(
+                title: "Succès",
+                message: "Maison ajoutée avec succees !",
+                backgroundColor: Colors.green);
+          },
+        ),
       ),
     ],
   );
@@ -664,7 +687,6 @@ Widget buildHouseTitle() {
       text: rxHouseController.currentHouse.value.title ?? "Titre non spécifié",
       fontSize: 30,
       fontWeight: FontWeight.w800,
-      overflow: TextOverflow.visible,
     ),
   );
 }
@@ -731,7 +753,8 @@ Widget buildLocationInfo() {
 Widget buildOptions() {
   return Obx(() {
     if (rxHouseController.currentHouse.value.options != null &&
-        rxHouseController.currentHouse.value.options!.isNotEmpty) {
+        rxHouseController.currentHouse.value.options!
+            .any((option) => option.isNotEmpty)) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -834,8 +857,8 @@ Widget buildItineraryButton() {
       color: Colors.black,
     ),
     backgroundColor: primaryColor,
-    onPressed: () {
-      rxMapController.activateRouteMode();
+    onPressed: () async {
+      await rxMapController.activateRouteMode();
     },
   ));
 }
@@ -873,13 +896,26 @@ Widget buildDescriptionView() {
               text: "Description",
               fontWeight: FontWeight.w600,
               fontSize: 20,
-              overflow: TextOverflow.visible,
               textAlign: TextAlign.start),
           buildSpacer(),
-          buildText(
+          Container(
+            width: Get.size.width,
+            constraints: const BoxConstraints(
+              minHeight: 150,
+            ),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              color: thirdColor,
+            ),
+            padding: const EdgeInsets.all(20),
+            child: buildText(
               text: rxHouseController.currentHouse.value.description ?? "",
-              overflow: TextOverflow.visible,
-              textAlign: TextAlign.start),
+              textAlign: TextAlign.start,
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: white,
+            ),
+          ),
         ],
       );
     } else {
@@ -911,9 +947,29 @@ Widget buildShowHousePanel() {
         buildSpacer(),
         buildItineraryButton(),
         buildContactButton(),
+        if (rxHouseController.currentHouse.value.idUser == user?.uid)
+          buildModifyMyHouseButton()
+        else
+          Container(),
         buildSpacer(),
         buildDescriptionView(),
       ],
     ),
   );
+}
+
+Widget buildModifyMyHouseButton() {
+  return Obx(() {
+    return buildElevatedButtonIcon(
+      label: 'Modifier mon bien immobilier',
+      icon: const Icon(Icons.edit, color: Colors.white),
+      backgroundColor: Colors.blue,
+      color: white,
+      fixedSize: Size(Get.size.width * 0.8, 40),
+      onPressed: () {
+        rxHouseController.isUpdateHouse.value = true;
+        Get.toNamed(Routes.addHouse);
+      },
+    );
+  });
 }

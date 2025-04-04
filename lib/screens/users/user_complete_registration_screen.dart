@@ -49,7 +49,6 @@ class _UserCompleteRegistrationScreenState
                           buildText(
                             text:
                                 "Nous sommes ravis de vous accueillir sur Radar. Completez vos informations personnelles.",
-                            overflow: TextOverflow.visible,
                             fontWeight: FontWeight.w800,
                           ),
                           buildSpacer(),

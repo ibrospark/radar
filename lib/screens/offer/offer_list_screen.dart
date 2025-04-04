@@ -111,7 +111,44 @@ class _OfferListScreenState extends State<OfferListScreen> {
                               numberOfDay: offer.numberOfDay!,
                             );
                             buildCongratulationsPopupDialog(
-                              text: "Offre activée avec succès!",
+                              widget: Column(
+                                children: [
+                                  buildText(
+                                      text:
+                                          "Vous avez activé l'offre ${offer.name} avec succès! pour une durée de ${offer.numberOfDay} jour(s)",
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 16,
+                                      color: white,
+                                      textAlign: TextAlign.center),
+                                  buildSpacer(),
+                                  buildText(
+                                    text:
+                                        "Vous pouvez publier jusqu'à ${offer.numberOfPublication} annonce(s)",
+                                    fontSize: 16,
+                                    color: white,
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  buildElevatedButtonIcon(
+                                    fixedSize: Size(Get.size.width, 30),
+                                    label: "Fermer",
+                                    backgroundColor: thirdColor,
+                                    color: white,
+                                    onPressed: () {
+                                      Get.back();
+                                    },
+                                  ),
+                                  buildElevatedButtonIcon(
+                                    fixedSize: Size(Get.size.width, 30),
+                                    label: "Publier une annonce",
+                                    backgroundColor: primaryColor,
+                                    color: white,
+                                    onPressed: () {
+                                      Get.offAllNamed(Routes.home);
+                                      Get.toNamed(Routes.addHouse);
+                                    },
+                                  ),
+                                ],
+                              ),
                             );
                           },
                           backgroundColor: primaryColor,

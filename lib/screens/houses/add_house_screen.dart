@@ -51,6 +51,9 @@ class _AddHouseScreenState extends State<AddHouseScreen> {
       return WillPopScope(
         onWillPop: () async {
           rxMapController.activateDefaultMode();
+          rxHouseController.resetAllControllers();
+          rxImageController.clearImageController();
+
           return true;
         },
         child: Obx(
@@ -131,14 +134,15 @@ class _AddHouseScreenState extends State<AddHouseScreen> {
                                         fontSize: 20,
                                       ),
                                     ),
-                                    buildText(
-                                      text: rxSearchPlaceController
-                                          .placeName.value,
-                                      textAlign: TextAlign.center,
-                                      overflow: TextOverflow.visible,
-                                      color: white,
-                                      fontSize: 20,
-                                    ),
+                                    Expanded(
+                                      child: buildText(
+                                        text: rxSearchPlaceController
+                                            .placeName.value,
+                                        textAlign: TextAlign.center,
+                                        color: white,
+                                        fontSize: 20,
+                                      ),
+                                    )
                                   ],
                                 ),
                               ),

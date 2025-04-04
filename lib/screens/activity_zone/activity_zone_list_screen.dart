@@ -22,6 +22,7 @@ class _ActivityZoneListScreenState extends State<ActivityZoneListScreen> {
     return WillPopScope(
       onWillPop: () async {
         rxMapController.activateDefaultMode();
+
         return true;
       },
       child: Scaffold(

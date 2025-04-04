@@ -91,26 +91,28 @@ class HouseController extends GetxController {
     }
   }
 
-  // Reset all controllers
+  // Reset all controllers to their initial values
   void resetAllControllers() {
-    for (var controller in [
-      titleController,
-      descriptionController,
-      regionController,
-      rentalDurationController,
-      transactionTypeController,
-      priceController,
-      minPriceController,
-      maxPriceController,
-      areaController,
-      numberOfBedroomsController,
-      numberOfRoomsController,
-      numberOfLivingRoomsController,
-      numberOfBathroomsController,
-      numberOfFloorsController
-    ]) {
-      controller.value.clear();
-    }
+    titleController.value.text = '';
+    descriptionController.value.text = '';
+    regionController.value.text = '';
+    rentalDurationController.value.text = '';
+    transactionTypeController.value.text = '';
+    priceController.value.text = '';
+    minPriceController.value.text = '';
+    maxPriceController.value.text = '';
+    areaController.value.text = '';
+    numberOfBedroomsController.value.text = '';
+    numberOfRoomsController.value.text = '';
+    numberOfLivingRoomsController.value.text = '';
+    numberOfBathroomsController.value.text = '';
+    numberOfFloorsController.value.text = '';
+
+    selectedRentalDuration.value = '';
+    selectedTransactionType.value = transactionsTypeList.first;
+    selectedCurrency.value = 'Xof';
+    selectedCategory.value = categoriesList.first;
+    selectedOptions.clear();
   }
 
   // Generate total number of pieces

@@ -8,11 +8,10 @@ import 'package:radar/_builds/build_form.dart';
 import 'package:radar/utils/routes.dart';
 import '../utils/constants.dart';
 
-PreferredSizeWidget? buildAppBar({
-  String? title = "Acceuil",
-  List<Widget>? actions,
-}) {
+PreferredSizeWidget? buildAppBar(
+    {Widget? leading, String? title = "Acceuil", List<Widget>? actions}) {
   return AppBar(
+    leading: leading,
     title: Row(
       children: [
         Expanded(
@@ -67,7 +66,7 @@ buildText({
   strutStyle,
   textDirection,
   locale,
-  TextOverflow? overflow = TextOverflow.ellipsis,
+  TextOverflow? overflow = TextOverflow.visible,
   textScaleFactor,
   int? maxLines,
   semanticsLabel,
@@ -245,7 +244,6 @@ buildGrandTitle({
       fontWeight: fontWeight,
       fontStyle: fontStyle,
       color: color,
-      overflow: TextOverflow.visible,
     ),
   );
 }
@@ -395,46 +393,40 @@ Widget buildNoPermission() {
   );
 }
 
-buildCongratulationsPopupDialog({String text = ""}) {
+buildCongratulationsPopupDialog({Widget? widget}) {
   return Get.dialog(
     Center(
       child: Padding(
         padding: EdgeInsets.all(20),
         child: Container(
-          width: Get.size.width * 0.8,
-          height: Get.size.height * 0.4,
+          constraints: BoxConstraints(
+            maxWidth: Get.size.width * 0.8,
+            maxHeight: Get.size.height * 0.8,
+          ),
           decoration: BoxDecoration(
-              gradient: gradient,
-              borderRadius: BorderRadius.circular(
-                20,
-              )),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SvgPicture.asset(
-                "assets/svg/checked.svg",
-                width: Get.size.width * 0.3,
+            gradient: gradient,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SvgPicture.asset(
+                    "assets/svg/checked.svg",
+                    width: Get.size.width * 0.3,
+                  ),
+                  buildGrandTitle(
+                    text: "Félicitation!",
+                    color: primaryColor,
+                  ),
+                  buildSpacer(),
+                  widget ?? SizedBox.shrink(),
+                ],
               ),
-              buildGrandTitle(
-                text: "Félicitation!",
-                color: primaryColor,
-              ),
-              buildSpacer(),
-              buildText(
-                text: text,
-                color: white,
-              ),
-              buildSpacer(),
-              buildElevatedButtonIcon(
-                fixedSize: Size(double.infinity, 30),
-                label: "Fermer",
-                backgroundColor: thirdColor,
-                color: white,
-                onPressed: () {
-                  Get.back();
-                },
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -451,9 +443,7 @@ Future<bool> buildConfirmDialog(BuildContext context) async {
       actions: [
         TextButton(
           onPressed: () {
-            Get.back(
-                result:
-                    false); // Retourne 'false' pour rester dans l'application
+            Get.back(); // Retourne 'false' pour rester dans l'application
           },
           child: Text("Non"),
         ),

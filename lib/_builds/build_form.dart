@@ -19,6 +19,7 @@ buildTextFormField({
   Widget? prefix,
   void Function(String)? onChanged,
   bool disableLabel = false,
+  void Function(String)? onFieldSubmitted,
 }) {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
@@ -40,6 +41,7 @@ buildTextFormField({
         child: TextFormField(
           controller: controller,
           obscureText: obscureText,
+          onFieldSubmitted: onFieldSubmitted,
           minLines: minLines,
           maxLines: maxLines,
           initialValue: initialValue,

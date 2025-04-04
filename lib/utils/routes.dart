@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:get/get_navigation/src/routes/get_route.dart';
 import 'package:radar/main.dart';
 import 'package:radar/screens/activity_zone/activity_zone_list_screen.dart';
-import 'package:radar/screens/chat/chat_list_screen.dart';
+import 'package:radar/screens/chat/discussion_list_screen.dart';
 import 'package:radar/screens/users/verification_otp_screen.dart';
 import 'package:radar/screens/houses/add_house_screen.dart';
 import 'package:radar/screens/maps/main_maps_screen.dart';
@@ -40,8 +40,9 @@ class Routes {
   // Notifications
   static const String notifications = '/notifications';
   // Chat
+
+  static const String messageScreen = '/message-screen';
   static const String discussionList = '/discussion-list';
-  static const String ChatListScreen = '/chat-list';
   // Activity Zone
   static const String activityZoneScreen = '/activity-zone';
 }
@@ -105,8 +106,8 @@ List<GetPage<dynamic>> routesList = [
   // Chat----------------------------
 
   GetPage(
-    name: Routes.ChatListScreen,
-    page: () => ChatListScreen(),
+    name: Routes.discussionList,
+    page: () => DiscussionListScreen(),
   ),
   // Activity Zone----------------------------
   GetPage(

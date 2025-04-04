@@ -44,7 +44,6 @@ class MapController extends GetxController {
 
   // UI State management
   RxBool isMapCreated = false.obs;
-  RxBool isMapReady = false.obs;
   RxBool isPickerHouseMode = false.obs;
   RxBool isPickerActivityZone = false.obs;
   RxBool isRouteMode = false.obs;
@@ -55,7 +54,8 @@ class MapController extends GetxController {
   RxBool displayFilterPanel = true.obs;
   RxBool displayDrawerBtn = true.obs;
   RxBool displayPublishBtn = true.obs;
-  RxDouble distanceInMeters = 0.0.obs;
+  RxString distanceText = "".obs;
+  RxString travelTimeText = "".obs;
 
   // Location and Camera Management ----------------------------------------------------
   Future<void> setCurrentLocation() async {
@@ -88,20 +88,27 @@ class MapController extends GetxController {
       }
     }
 
-    return await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.best);
+    if (googleMapController.value != null) {
+      return await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.best);
+    } else {
+      throw Exception("Google Map Controller is not initialized yet.");
+    }
   }
 
-// Déplacer la camera ---------------------------------------------------------
-  void moveCamera(double latitude, double longitude) {
-    googleMapController.value?.animateCamera(
-      CameraUpdate.newCameraPosition(
-        CameraPosition(
-          target: LatLng(latitude, longitude),
-          zoom: 16.0,
+  Future<void> moveCamera(double latitude, double longitude) async {
+    if (googleMapController.value != null && isMapCreated.value) {
+      await googleMapController.value?.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: LatLng(latitude, longitude),
+            zoom: 16.0,
+          ),
         ),
-      ),
-    );
+      );
+    } else {
+      print("Map not ready yet");
+    }
   }
 
 // Quand la caméra est immobile ---------------------------------------------------------
@@ -155,63 +162,69 @@ class MapController extends GetxController {
   List<House> _applyFilters(List<House> houses) {
     return houses.where((house) {
       bool matches = true;
-      if (rxHouseController.selectedCategory.value.isNotEmpty) {
-        matches &= house.category == rxHouseController.selectedCategory.value;
-      }
-      if (rxHouseController.selectedTransactionType.value.isNotEmpty) {
-        matches &= house.transactionType ==
-            rxHouseController.selectedTransactionType.value;
-      }
-      if (rxHouseController.numberOfBedroomsController.value.text.isNotEmpty) {
-        matches &= house.numberOfBedrooms ==
-            int.tryParse(
-                rxHouseController.numberOfBedroomsController.value.text);
-      }
-      if (rxHouseController
-          .numberOfLivingRoomsController.value.text.isNotEmpty) {
-        matches &= house.numberOfLivingRooms ==
-            int.tryParse(
-                rxHouseController.numberOfLivingRoomsController.value.text);
-      }
-      if (rxHouseController.numberOfBathroomsController.value.text.isNotEmpty) {
-        matches &= house.numberOfBathrooms ==
-            int.tryParse(
-                rxHouseController.numberOfBathroomsController.value.text);
-      }
-      if (rxHouseController.numberOfFloorsController.value.text.isNotEmpty) {
-        matches &= house.numberOfFloors ==
-            int.tryParse(rxHouseController.numberOfFloorsController.value.text);
-      }
-      if (rxHouseController.areaController.value.text.isNotEmpty) {
-        matches &= house.area ==
-            int.tryParse(rxHouseController.areaController.value.text);
-      }
-      if (rxHouseController.selectedRentalDuration.value.isNotEmpty) {
-        matches &= house.rentalDuration ==
-            rxHouseController.selectedRentalDuration.value;
-      }
-      if (rxHouseController.selectedCurrency.value.isNotEmpty) {
-        matches &= house.currency == rxHouseController.selectedCurrency.value;
-      }
-      if (neighborhood.value.isNotEmpty) {
-        matches &= house.neighborhood == neighborhood.value;
-      }
-      if (rxHouseController.selectedOptions.isNotEmpty) {
-        matches &= rxHouseController.selectedOptions
-            .every((option) => house.options?.contains(option) ?? false);
-      }
+
       if (rxHouseController.isCurrentUserHouses.value) {
-        matches &=
-            house.idUser == rxUserController.currentUser.value!.id.toString();
+        matches &= house.idUser == user?.uid;
+      } else {
+        if (rxHouseController.selectedCategory.value.isNotEmpty) {
+          matches &= house.category == rxHouseController.selectedCategory.value;
+        }
+        if (rxHouseController.selectedTransactionType.value.isNotEmpty) {
+          matches &= house.transactionType ==
+              rxHouseController.selectedTransactionType.value;
+        }
+        if (rxHouseController
+            .numberOfBedroomsController.value.text.isNotEmpty) {
+          matches &= house.numberOfBedrooms ==
+              int.tryParse(
+                  rxHouseController.numberOfBedroomsController.value.text);
+        }
+        if (rxHouseController
+            .numberOfLivingRoomsController.value.text.isNotEmpty) {
+          matches &= house.numberOfLivingRooms ==
+              int.tryParse(
+                  rxHouseController.numberOfLivingRoomsController.value.text);
+        }
+        if (rxHouseController
+            .numberOfBathroomsController.value.text.isNotEmpty) {
+          matches &= house.numberOfBathrooms ==
+              int.tryParse(
+                  rxHouseController.numberOfBathroomsController.value.text);
+        }
+        if (rxHouseController.numberOfFloorsController.value.text.isNotEmpty) {
+          matches &= house.numberOfFloors ==
+              int.tryParse(
+                  rxHouseController.numberOfFloorsController.value.text);
+        }
+        if (rxHouseController.areaController.value.text.isNotEmpty) {
+          matches &= house.area ==
+              int.tryParse(rxHouseController.areaController.value.text);
+        }
+        if (rxHouseController.selectedRentalDuration.value.isNotEmpty) {
+          matches &= house.rentalDuration ==
+              rxHouseController.selectedRentalDuration.value;
+        }
+        if (rxHouseController.selectedCurrency.value.isNotEmpty) {
+          matches &= house.currency == rxHouseController.selectedCurrency.value;
+        }
+        if (neighborhood.value.isNotEmpty) {
+          matches &= house.neighborhood == neighborhood.value;
+        }
+        if (rxHouseController.selectedOptions.isNotEmpty) {
+          matches &= rxHouseController.selectedOptions
+              .every((option) => house.options?.contains(option) ?? false);
+        }
+
+        int minPrix =
+            int.tryParse(rxHouseController.minPriceController.value.text) ?? 0;
+        int? maxPrix =
+            int.tryParse(rxHouseController.maxPriceController.value.text);
+        matches &= (house.price ?? 0) >= minPrix;
+        if (maxPrix != null) {
+          matches &= (house.price ?? 0) <= maxPrix;
+        }
       }
-      int minPrix =
-          int.tryParse(rxHouseController.minPriceController.value.text) ?? 0;
-      int? maxPrix =
-          int.tryParse(rxHouseController.maxPriceController.value.text);
-      matches &= (house.price ?? 0) >= minPrix;
-      if (maxPrix != null) {
-        matches &= (house.price ?? 0) <= maxPrix;
-      }
+
       return matches;
     }).toList();
   }
@@ -225,7 +238,7 @@ class MapController extends GetxController {
               houseData.imageLinks!.isNotEmpty
                   ? houseData.imageLinks!.first
                   : "https://firebasestorage.googleapis.com/v0/b/radar-2024.appspot.com/o/default%2Fempty.png?alt=media&token=faadf156-26ce-4973-b130-b7a723247124",
-              size: 150,
+              size: 100,
               addBorder: true,
               borderColor: Colors.white,
               borderSize: 15),
@@ -242,12 +255,17 @@ class MapController extends GetxController {
     update();
   }
 
-  void _adjustCameraToMarkers() {
-    if (markers.isNotEmpty) {
+  Future<void> _adjustCameraToMarkers() async {
+    if (markers.isNotEmpty &&
+        googleMapController.value != null &&
+        isMapCreated.value) {
       LatLngBounds bounds = _createLatLngBoundsFromMarkers();
-      googleMapController.value?.animateCamera(
+      await googleMapController.value!.animateCamera(
         CameraUpdate.newLatLngBounds(bounds, 50),
       );
+    } else {
+      print(
+          "Cannot adjust camera: Either markers are empty or GoogleMapController is null.");
     }
   }
 
@@ -380,6 +398,8 @@ class MapController extends GetxController {
     isPickerActivityZone.value = false; //Picker mode
     isPickerHouseMode.value = false; //Picker mode
     isRouteMode.value = false; //Route mode
+    rxHouseController.isCurrentUserHouses.value = false;
+// -------------------------------------------------------------
     displayCurrentPositionBtnCircular.value = true; //Current position button
     displayCurrentPositionBtnLg.value = false; //Current position button
     displaySearchLocationBar.value = true; //Search location bar
@@ -387,9 +407,13 @@ class MapController extends GetxController {
     displayFilterPanel.value = true; //Filter panel
     displayDrawerBtn.value = true; //Drawer button
     displayPublishBtn.value = true; //Publish button
-    addFirebaseCircularMarker(); //  Start listening to houses stream
-    rxMapController.markers.refresh();
-    clearPolylines(); //Clear polylines
+    await addFirebaseCircularMarker(); //  Start listening to houses stream
+    if (rxMapController.markers.isNotEmpty) {
+      rxMapController.markers.refresh();
+    }
+    if (polylines.isNotEmpty) {
+      clearPolylines(); // Clear polylines
+    }
     update();
   }
 
@@ -398,6 +422,8 @@ class MapController extends GetxController {
     isPickerActivityZone.value = false; //Picker mode
     isPickerHouseMode.value = true; //Picker mode
     isRouteMode.value = false; //Route mode
+    rxHouseController.isCurrentUserHouses.value = false;
+// -------------------------------------------------------------
     displayCurrentPositionBtnCircular.value = false; //Current position button
     displayCurrentPositionBtnLg.value = true; //Current position button
     displaySearchLocationBar.value = true; //Search location bar
@@ -406,7 +432,6 @@ class MapController extends GetxController {
     displayDrawerBtn.value = false; //Drawer button
     displayPublishBtn.value = false; //Publish button
 
-    rxHouseController.isCurrentUserHouses.value = false;
     rxHouseController.stopHousesStream();
 
     clearMarkersExcept(['current_position']);
@@ -419,6 +444,8 @@ class MapController extends GetxController {
     isPickerActivityZone.value = true; //Picker mode
     isPickerHouseMode.value = false; //Picker mode
     isRouteMode.value = false; //Route mode
+    rxHouseController.isCurrentUserHouses.value = false;
+// -------------------------------------------------------------
     displayCurrentPositionBtnCircular.value = false; //Current position button
     displayCurrentPositionBtnLg.value = true; //Current position button
     displaySearchLocationBar.value = true; //Search location bar
@@ -431,14 +458,17 @@ class MapController extends GetxController {
 
     clearMarkersExcept(['current_position']);
     clearPolylines();
+
     update();
   }
 
 // Activer le mode prendre la zone d'activité ---------------------------------------------------------
-  void activatePropertyManagement() {
+  Future<void> activatePropertyManagement() async {
     isPickerActivityZone.value = false; //Picker mode
     isPickerHouseMode.value = false; //Picker mode
     isRouteMode.value = false; //Route mode
+    rxHouseController.isCurrentUserHouses.value = true;
+// -------------------------------------------------------------
     displayCurrentPositionBtnCircular.value = true; //Current position button
     displayCurrentPositionBtnLg.value = false; //Current position button
     displaySearchLocationBar.value = true; //Search location bar
@@ -448,51 +478,93 @@ class MapController extends GetxController {
     displayPublishBtn.value = true; //Publish button
 
     rxHouseController.resetAllControllers();
-    rxHouseController.isCurrentUserHouses.value = true;
-    addFirebaseCircularMarker(
+    await addFirebaseCircularMarker(
         applyFilters: true); //  Start listening to houses stream
-
-    rxMapController.markers.refresh();
-    clearPolylines(); //Clear polylines
+    if (rxMapController.markers.isNotEmpty) {
+      rxMapController.markers.refresh();
+    }
+    if (polylines.isNotEmpty) {
+      clearPolylines(); // Clear polylines
+    }
     update();
   }
 
-// Activer le mode route ---------------------------------------------------------
+  // Activer le mode route ---------------------------------------------------------
   Future<void> activateRouteMode() async {
     isPickerActivityZone.value = false; //Picker mode
     isPickerHouseMode.value = false; //Picker mode
     isRouteMode.value = true; //Route mode
-    displayCurrentPositionBtnCircular.value = true; //Current position button
-    displayCurrentPositionBtnLg.value = false; //Current position button
-    displaySearchLocationBar.value = true; //Search location bar
-    displayValidatePositionBtnLg.value = false; //Validate position button
-    displayFilterPanel.value = false; //Filter panel
-    displayDrawerBtn.value = false; //Drawer button
-    displayPublishBtn.value = false; //Publish button
+    rxHouseController.isCurrentUserHouses.value = false;
+// -------------------------------------------------------------
+    // Update UI visibility
+    displayCurrentPositionBtnCircular.value = true;
+    displayCurrentPositionBtnLg.value = false;
+    displaySearchLocationBar.value = true;
+    displayValidatePositionBtnLg.value = false;
+    displayFilterPanel.value = false;
+    displayDrawerBtn.value = false;
+    displayPublishBtn.value = false;
 
+    // Stop the houses stream and clear markers/polylines
     rxHouseController.stopHousesStream();
-    clearPolylines(); // Supprimer tous les polylines
-    // Supprimer tous les marqueurs sauf le marqueur de position actuelle et le marqueur de sélection de lieu.
     clearMarkersExcept(
         ['current_position', rxHouseController.currentHouse.value.id!]);
-    rxMapController.markers.refresh();
+    clearPolylines();
+    markers.refresh();
 
-    final currentHouseCoords = rxHouseController.currentHouse.value.coords!;
-
+    // Set current location and draw route
     await setCurrentLocation();
-    // Dessiner la route et ajouter les marqueurs
+    final currentHouseCoords = rxHouseController.currentHouse.value.coords!;
     await drawRoute(
-        currentUserLatLng.value.latitude,
-        currentUserLatLng.value.longitude,
-        currentHouseCoords.latitude,
-        currentHouseCoords.longitude);
+      currentUserLatLng.value.latitude,
+      currentUserLatLng.value.longitude,
+      currentHouseCoords.latitude,
+      currentHouseCoords.longitude,
+    );
 
-    // Calculer la distance entre les points
+    // Calculate distance and update UI
     calculateDistanceBetweenPoints(
-        currentUserLatLng.value.latitude,
-        currentUserLatLng.value.longitude,
-        currentHouseCoords.latitude,
-        currentHouseCoords.longitude);
+      currentUserLatLng.value.latitude,
+      currentUserLatLng.value.longitude,
+      currentHouseCoords.latitude,
+      currentHouseCoords.longitude,
+    );
+    calculateTravelTime(
+      currentUserLatLng.value.latitude,
+      currentUserLatLng.value.longitude,
+      currentHouseCoords.latitude,
+      currentHouseCoords.longitude,
+    );
+
+    // Adjust camera to fit the route
+    if (googleMapController.value != null) {
+      LatLngBounds bounds = LatLngBounds(
+        southwest: LatLng(
+          currentUserLatLng.value.latitude < currentHouseCoords.latitude
+              ? currentUserLatLng.value.latitude
+              : currentHouseCoords.latitude,
+          currentUserLatLng.value.longitude < currentHouseCoords.longitude
+              ? currentUserLatLng.value.longitude
+              : currentHouseCoords.longitude,
+        ),
+        northeast: LatLng(
+          currentUserLatLng.value.latitude > currentHouseCoords.latitude
+              ? currentUserLatLng.value.latitude
+              : currentHouseCoords.latitude,
+          currentUserLatLng.value.longitude > currentHouseCoords.longitude
+              ? currentUserLatLng.value.longitude
+              : currentHouseCoords.longitude,
+        ),
+      );
+
+      if (googleMapController.value != null && isMapCreated.value) {
+        await googleMapController.value!.animateCamera(
+          CameraUpdate.newLatLngBounds(bounds, 50),
+        );
+      } else {
+        print("Map is not initialized yet.");
+      }
+    }
 
     update();
     Get.back();
@@ -533,14 +605,42 @@ class MapController extends GetxController {
     }
   }
 
-// Calculer la distance entre deux markers --------------------------------------------------------
   void calculateDistanceBetweenPoints(
       double lat1, double lon1, double lat2, double lon2) {
     double distance = Geolocator.distanceBetween(lat1, lon1, lat2, lon2);
+
     if (distance < 1000) {
-      distanceInMeters.value = distance;
+      // Distance en mètres
+      distanceText.value = "${distance.toStringAsFixed(0)} m";
     } else {
-      distanceInMeters.value = distance / 1000; // Convert to kilometers
+      // Distance en kilomètres
+      distanceText.value = "${(distance / 1000).toStringAsFixed(2)} km";
+    }
+  }
+
+  void calculateTravelTime(
+      double lat1, double lon1, double lat2, double lon2) async {
+    final String url =
+        'https://maps.googleapis.com/maps/api/directions/json?origin=$lat1,$lon1&destination=$lat2,$lon2&key=$googleMapApiKey';
+
+    try {
+      final response = await http.get(Uri.parse(url));
+      final data = json.decode(response.body);
+
+      if (data['status'] == 'OK') {
+        final duration = data['routes'][0]['legs'][0]['duration']['text'];
+
+        travelTimeText.value = "Le temps estimé : $duration.";
+      } else {
+        throw Exception('Failed to calculate travel time: ${data['status']}');
+      }
+    } catch (e) {
+      print('Error calculating travel time: $e');
+      Get.snackbar(
+        "Erreur",
+        "Impossible de calculer le temps de trajet.",
+        backgroundColor: Colors.redAccent,
+      );
     }
   }
 

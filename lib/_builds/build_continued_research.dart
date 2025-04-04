@@ -23,7 +23,6 @@ Future<void> buildSearchContinueDialog() async {
                   textAlign: TextAlign.center,
                   fontWeight: FontWeight.w800,
                   fontSize: 20,
-                  overflow: TextOverflow.visible,
                   color: Colors.white,
                 ),
                 const SizedBox(height: 20),

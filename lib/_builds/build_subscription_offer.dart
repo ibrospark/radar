@@ -25,7 +25,6 @@ buildLowCredit() {
             color: primaryColor,
             fontStyle: FontStyle.italic,
             fontWeight: FontWeight.w700,
-            overflow: TextOverflow.visible,
             fontSize: 20,
             textAlign: TextAlign.center),
         buildSpacer(),

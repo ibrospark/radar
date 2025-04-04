@@ -8,6 +8,8 @@ import 'package:radar/utils/functions.dart';
 
 Widget buildImagePicker() {
   return Obx(() => GridView.builder(
+        physics:
+            const NeverScrollableScrollPhysics(), // Désactiver le défilement indépendant
         shrinkWrap: true,
         itemCount: rxImageController.pickedImages.length + 1,
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(

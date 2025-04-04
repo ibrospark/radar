@@ -77,12 +77,23 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
                                           .toString(),
                                   radius: 80,
                                 ),
-                          const Positioned(
-                            bottom: 30,
-                            right: 30,
-                            child: Icon(
-                              Icons.edit,
-                              color: Colors.white,
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Positioned(
+                              bottom: 0,
+                              right: 0,
+                              child: FloatingActionButton(
+                                mini: true,
+                                backgroundColor: thirdColor,
+                                onPressed: () {
+                                  showImagePickerBottomSheet();
+                                },
+                                child: Icon(
+                                  Icons.edit,
+                                  color: white,
+                                ),
+                              ),
                             ),
                           ),
                         ],
@@ -92,6 +103,7 @@ class _UserSettingsScreenState extends State<UserSettingsScreen> {
                       },
                     ),
                   ),
+                  buildSpacer(),
                   Row(
                     children: [
                       Expanded(

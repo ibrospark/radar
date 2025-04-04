@@ -17,7 +17,7 @@ Drawer buildDrawer() {
         padding: EdgeInsets.zero,
         children: [
           SizedBox(
-            height: Get.size.height * 0.4,
+            height: MediaQuery.of(Get.context!).size.height * 0.45,
             child: DrawerHeader(
               decoration: BoxDecoration(
                 color: primaryColor,
@@ -25,11 +25,30 @@ Drawer buildDrawer() {
               child: Column(
                 children: [
                   // Affichage dynamique de l'image du profil utilisateur
-                  Obx(
-                    () => buildImageCircle(
-                      rxUserController.currentUser.value!.avatar.toString(),
-                      radius: 75,
-                    ),
+                  Stack(
+                    children: [
+                      Obx(
+                        () => buildImageCircle(
+                          rxUserController.currentUser.value!.avatar.toString(),
+                          radius: 75,
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: FloatingActionButton(
+                          mini: true,
+                          backgroundColor: thirdColor,
+                          onPressed: () {
+                            Get.toNamed(Routes.userSettings);
+                          },
+                          child: Icon(
+                            Icons.edit,
+                            color: white,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   buildSpacer(),
                   // Affichage dynamique du numéro de téléphone
@@ -39,7 +58,6 @@ Drawer buildDrawer() {
                     fontSize: 25,
                     fontWeight: FontWeight.w800,
                     fontStyle: FontStyle.italic,
-                    overflow: TextOverflow.visible,
                   ),
 
                   // Affichage dynamique du type de compte
@@ -50,15 +68,28 @@ Drawer buildDrawer() {
                           : "Type de compte : Non disponible",
                       fontSize: 18,
                       fontWeight: FontWeight.w500,
-                      overflow: TextOverflow.visible,
                     ),
                   ),
                   // Affichage dynamique de l'UID de l'utilisateur
                   buildText(
                     text: "UID : ${user?.uid}",
-                    overflow: TextOverflow.visible,
                     fontSize: 13,
                   ),
+                  // Affichage dynamique du nom et prénom
+                  if ((rxUserController
+                              .currentUser.value?.firstName?.isNotEmpty ??
+                          false) &&
+                      (rxUserController
+                              .currentUser.value?.lastName?.isNotEmpty ??
+                          false)) ...[
+                    buildText(
+                      text:
+                          "${rxUserController.currentUser.value!.firstName} ${rxUserController.currentUser.value!.lastName}",
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    buildSpacer(),
+                  ]
                 ],
               ),
             ),
@@ -84,6 +115,7 @@ Drawer buildDrawer() {
             ),
             onTap: () {
               Get.back();
+              rxMapController.activateDefaultMode();
             },
           ),
           divider,
@@ -132,7 +164,7 @@ Drawer buildDrawer() {
               fontWeight: FontWeight.w600,
             ),
             onTap: () {
-              Get.toNamed(Routes.ChatListScreen);
+              Get.toNamed(Routes.discussionList);
             },
           ),
           divider,

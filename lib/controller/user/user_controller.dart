@@ -11,7 +11,7 @@ class UserController extends GetxController {
   RxList<UserModel> users = <UserModel>[].obs;
   Rxn<UserModel> currentUser = Rxn<UserModel>();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
+  RxBool isLoading = false.obs;
   // Toutes les variables BEGIN -------------------------------------------------
   RxString idUser = "".obs;
   RxString lastName = "".obs;

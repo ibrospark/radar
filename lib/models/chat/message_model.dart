@@ -1,13 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class MessageModel {
-  String messageId;
-  String senderId;
-  String receiverId;
-  String content;
-  Timestamp timestamp;
+class Message {
+  final String messageId;
+  final String senderId;
+  final String receiverId;
+  final String content;
+  final Timestamp timestamp;
 
-  MessageModel({
+  Message({
     required this.messageId,
     required this.senderId,
     required this.receiverId,
@@ -15,16 +15,7 @@ class MessageModel {
     required this.timestamp,
   });
 
-  factory MessageModel.fromMap(Map<String, dynamic> data) {
-    return MessageModel(
-      messageId: data['messageId'],
-      senderId: data['senderId'],
-      receiverId: data['receiverId'],
-      content: data['content'],
-      timestamp: data['timestamp'],
-    );
-  }
-
+  // Convertir le message en Map pour Firestore
   Map<String, dynamic> toMap() {
     return {
       'messageId': messageId,
@@ -33,5 +24,16 @@ class MessageModel {
       'content': content,
       'timestamp': timestamp,
     };
+  }
+
+  // Créer un message à partir d'un Map (Firestore)
+  factory Message.fromMap(Map<String, dynamic> map) {
+    return Message(
+      messageId: map['messageId'],
+      senderId: map['senderId'],
+      receiverId: map['receiverId'],
+      content: map['content'],
+      timestamp: map['timestamp'],
+    );
   }
 }

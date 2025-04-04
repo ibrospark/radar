@@ -14,6 +14,13 @@ class ImageController extends GetxController {
   var imagesLinks = <String>[].obs;
   var uploadProgress = 0.0.obs;
 
+  void clearImageController() {
+    pickedImages.clear();
+    imagesLinks.clear();
+    uploadTask.value = null;
+    uploadProgress.value = 0.0;
+  }
+
   Future<void> selectGallery(ImageSource imageSource) async {
     try {
       final XFile? imageToPick = await picker.pickImage(source: imageSource);
@@ -21,8 +28,11 @@ class ImageController extends GetxController {
         final imageTemporary = File(imageToPick.path);
         pickedImages.add(imageTemporary);
       }
-    } on PlatformException {
-      // Gestion des exceptions
+    } on PlatformException catch (e) {
+      print("Erreur lors de la sélection de l'image : $e");
+      Get.snackbar("Erreur", "Impossible d'ouvrir la caméra ou la galerie.");
+    } catch (e) {
+      print("Erreur inconnue : $e");
     }
   }
 

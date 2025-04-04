@@ -5,7 +5,6 @@ import 'package:get/get.dart';
 import 'package:radar/controller/notification_controller.dart';
 // Utilisation de AuthController
 import 'package:radar/firebase_options.dart';
-import 'package:radar/screens/chat/chat_list_screen.dart';
 import 'package:radar/screens/maps/main_maps_screen.dart';
 import 'package:radar/screens/users/login_screen.dart';
 import 'package:radar/utils/constants.dart';

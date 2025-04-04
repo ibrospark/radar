@@ -5,8 +5,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:radar/_builds/build_all_elements.dart';
 import 'package:radar/_builds/build_image_picker.dart';
 import 'package:radar/controller/activity_zone_controller.dart';
+import 'package:radar/controller/chat/message_controller.dart';
 import 'package:radar/controller/user/auth_controller.dart';
-import 'package:radar/controller/chat/chat_controller.dart';
+import 'package:radar/controller/chat/discussion_controller.dart';
 import 'package:radar/controller/draggable_scrollable_sheet_controller.dart';
 // import 'package:radar/controller/auth_controller.dart';
 import 'package:radar/controller/house_controller.dart';
@@ -32,7 +33,8 @@ void initializeControllers() {
   Get.put(MapController());
   Get.put(HouseController());
   Get.put(UserController());
-  Get.put(ChatController());
+  Get.put(DiscussionController());
+  Get.put(MessageController());
   Get.put(ImageController());
 
   Get.put(SearchPlaceController());
@@ -154,7 +156,7 @@ void showImagePickerBottomSheet() {
     Container(
       height: 200,
       decoration: const BoxDecoration(
-        color: secondaryColor,
+        gradient: gradient,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(20),
           topRight: Radius.circular(20),
